@@ -42,20 +42,21 @@ function PublicRoute({ component: Component, authenticated, ...rest }) {
 }
 
 function App() {
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [authenticated, setAuthenticated] = useState(false)
-  const [user, setUser] = useState('')
+  const [tokens, setTokens] = useState('')
 
   useEffect(() => {
-    if (user) {
+    if (tokens) {
       setAuthenticated(true)
       setLoading(false)
     } else {
       setAuthenticated(false)
       setLoading(false)
     }
-  }, [])
-  return loading === true ? (
+  }, [tokens])
+
+  return loading ? (
     <h2>Loading...</h2>
   ) : (
     <Router>
@@ -64,11 +65,13 @@ function App() {
         <PrivateRoute
           path="/dashboard"
           authenticated={authenticated}
+          setTokens={setTokens}
           component={Dashboard}
         />
         <PublicRoute
           path="/login"
           authenticated={authenticated}
+          setTokens={setTokens}
           component={Login}
         />
       </Switch>

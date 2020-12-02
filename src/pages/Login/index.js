@@ -11,23 +11,14 @@ import {
   Grid,
   makeStyles,
 } from '@material-ui/core'
-import { render } from 'react-dom'
-import { Formik, Form, Field } from 'formik'
 import { useForm } from '../../hooks/useForm'
-import AwesomeSlider from 'react-awesome-slider'
-import 'react-awesome-slider/dist/styles.css'
-import slider1 from '../../assets/images/slider1.jpg'
-import slider2 from '../../assets/images/slider2.jpg'
-import slider3 from '../../assets/images/slider3.jpg'
-import logo from '../../assets/images/logo.png'
+import { SITE_URL } from '../../Utils/utils'
+import Slider from '../../components/Slider'
 
-const slider = (
-  <AwesomeSlider bullets={false}>
-    <div data-src={slider1} />
-    <div data-src={slider2} />
-    <div data-src={slider3} />
-  </AwesomeSlider>
-)
+import axios from 'axios'
+
+import 'react-awesome-slider/dist/styles.css'
+import logo from '../../assets/images/logo.png'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -61,24 +52,44 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-function Login() {
+function Login({ setTokens }) {
   const classes = useStyles()
-  const [values, handleChange] = useForm({ email: '', password: '' })
+  const [values, handleChange] = useForm({ username: '', password: '' })
+  const config = {
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE,PATCH,OPTIONS',
+    },
+  }
   const handleSubmit = (e) => {
     e.preventDefault()
-    alert(`email : ${values.email} password : ${values.password}`)
+    axios
+      .post(
+        SITE_URL + '/wp-json/api/v1/token',
+        {
+          username: values.username,
+          password: values.password,
+        },
+        config,
+      )
+      .then((response) => {
+        console.log(response)
+      })
+      .catch((err) => {
+        console.log(err)
+      })
   }
 
   return (
     <Grid container component="main" className={classes.root}>
       <CssBaseline />
       <Grid item xs={false} sm={4} md={7} className={classes.slider}>
-        {slider}
+        <Slider />
       </Grid>
       <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
         <div className={classes.paper}>
           <Box mb={6}>
-            <img src={logo} width={400} />
+            <img src={logo} width={400} alt="logo" />
           </Box>
           <form className={classes.form} noValidate onSubmit={handleSubmit}>
             <TextField
@@ -86,18 +97,18 @@ function Login() {
               margin="normal"
               required
               fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
-              value={values.email}
+              id="username"
+              label="User name"
+              name="username"
+              autoComplete="username"
+              value={values.username}
               onChange={handleChange}
               autoFocus
             />
             <TextField
               variant="outlined"
               margin="normal"
-              requiredd
+              required
               fullWidth
               name="password"
               label="Password"
