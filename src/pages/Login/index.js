@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   Button,
   CssBaseline,
@@ -9,6 +9,7 @@ import {
   Paper,
   Box,
   Grid,
+  CircularProgress,
   makeStyles,
 } from '@material-ui/core'
 import { useForm } from '../../hooks/useForm'
@@ -50,34 +51,74 @@ const useStyles = makeStyles((theme) => ({
   slider: {
     display: 'flex',
   },
+  wrapper: {
+    margin: theme.spacing(1),
+    position: 'relative',
+  },
+  buttonProgress: {
+    color: "red",
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12,
+  },
 }))
 
 function Login({ setTokens }) {
   const classes = useStyles()
   const [values, handleChange] = useForm({ username: '', password: '' })
+  const [loading, setLoading] = useState(false);
+  const [helperText, setHelperText] = useState("");
   const config = {
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE,PATCH,OPTIONS',
     },
   }
   const handleSubmit = (e) => {
     e.preventDefault()
-    axios
-      .post(
-        SITE_URL + '/wp-json/api/v1/token',
-        {
-          username: values.username,
-          password: values.password,
-        },
-        config,
-      )
-      .then((response) => {
-        console.log(response)
-      })
-      .catch((err) => {
-        console.log(err)
-      })
+    if(values.username && values.password){
+    setLoading(true);
+    const requestOptions = {
+      method:'POST',
+      headers:{
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
+      body:{
+        username: values.username,
+        password: values.password
+      }
+    }
+    fetch(SITE_URL+'/wp-json/api/v1/token', requestOptions)
+    .then(response=>response.json())
+    .then(data=>console.log(data))
+    .catch(err=> setLoading(false))
+    // axios
+    //   .post(
+    //     SITE_URL + '/wp-json/api/v1/token',
+    //     {
+    //       username: values.username,
+    //       password: values.password,
+    //     },
+    //     config,
+    //   )
+    //   .then((response) => {
+    //     setLoading(false);
+    //     setHelperText("");
+    //     console.log(response)
+
+    //   })
+    //   .catch((err) => {
+    //     setLoading(false);
+    //     setHelperText("");
+    //     console.log(err)
+    //   })
+    }
+    else
+    {
+      setHelperText("Please fill all gaps");
+    }
   }
 
   return (
@@ -103,6 +144,8 @@ function Login({ setTokens }) {
               autoComplete="username"
               value={values.username}
               onChange={handleChange}
+              helperText={helperText}
+              error={helperText ? true:false}
               autoFocus
             />
             <TextField
@@ -114,23 +157,30 @@ function Login({ setTokens }) {
               label="Password"
               type="password"
               id="password"
+              helperText={helperText}
               value={values.password}
               onChange={handleChange}
+              error = {helperText ? true : false}
               autoComplete="current-password"
             />
             <FormControlLabel
               control={<Checkbox value="remember" color="primary" />}
               label="Remember me"
             />
+             <div className={classes.wrapper}>
             <Button
               type="submit"
               fullWidth
               variant="contained"
               color="primary"
               className={classes.submit}
+              disabled={loading}
+              // endIcon={loading?<CircularProgress color="secondary" size="medium" />:""}
             >
               Sign In
             </Button>
+            {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
+            </div>
             <Grid container>
               <Grid item xs>
                 <Link href="#" variant="body2">
