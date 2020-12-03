@@ -70,54 +70,38 @@ function Login({ setTokens }) {
   const [values, handleChange] = useForm({ username: '', password: '' })
   const [loading, setLoading] = useState(false);
   const [helperText, setHelperText] = useState("");
-  const config = {
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-    },
-  }
+  // const config = {
+  //   headers: {
+  //     'Access-Control-Allow-Origin': '*',
+  //   },
+  // }
   const handleSubmit = (e) => {
     e.preventDefault()
     if(values.username && values.password){
     setLoading(true);
-    const requestOptions = {
-      method:'POST',
-      headers:{
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-      body:{
-        username: values.username,
-        password: values.password
-      }
-    }
-    fetch(SITE_URL+'/wp-json/api/v1/token', requestOptions)
-    .then(response=>response.json())
-    .then(data=>console.log(data))
-    .catch(err=> setLoading(false))
-    // axios
-    //   .post(
-    //     SITE_URL + '/wp-json/api/v1/token',
-    //     {
-    //       username: values.username,
-    //       password: values.password,
-    //     },
-    //     config,
-    //   )
-    //   .then((response) => {
-    //     setLoading(false);
-    //     setHelperText("");
-    //     console.log(response)
+    axios
+      .post(
+        SITE_URL + '/wp-json/api/v1/token',
+        {
+          username: values.username,
+          password: values.password,
+        },
+      )
+      .then((response) => {
+        setLoading(false);
+        setHelperText("");
+        console.log(response)
 
-    //   })
-    //   .catch((err) => {
-    //     setLoading(false);
-    //     setHelperText("");
-    //     console.log(err)
-    //   })
+      })
+      .catch((err) => {
+        setLoading(false);
+        setHelperText("");
+        console.log(err)
+      })
     }
     else
     {
-      setHelperText("Please fill all gaps");
+      setHelperText("Please fill this field");
     }
   }
 
