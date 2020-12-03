@@ -65,11 +65,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-function Login({ setTokens }) {
+function Login(props) {
   const classes = useStyles()
   const [values, handleChange] = useForm({ username: '', password: '' })
   const [loading, setLoading] = useState(false);
   const [helperText, setHelperText] = useState("");
+
+  console.log(props);
   // const config = {
   //   headers: {
   //     'Access-Control-Allow-Origin': '*',
@@ -90,8 +92,7 @@ function Login({ setTokens }) {
       .then((response) => {
         setLoading(false);
         setHelperText("");
-        console.log(response)
-
+        props.setTokens(response.data.jwt_token);
       })
       .catch((err) => {
         setLoading(false);

@@ -9,7 +9,7 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 
 function PrivateRoute({ component: Component, authenticated, ...rest }) {
-  console.log(authenticated)
+  console.log("private",rest)
   return (
     <Route
       {...rest}
@@ -27,14 +27,15 @@ function PrivateRoute({ component: Component, authenticated, ...rest }) {
 }
 
 function PublicRoute({ component: Component, authenticated, ...rest }) {
+  console.log("public",rest)
   return (
     <Route
       {...rest}
       render={(props) =>
         authenticated === false ? (
-          <Component {...props} />
+          <Component {...props} setTokens={rest.setTokens} />
         ) : (
-          <Redirect to="/chat" />
+          <Redirect to="/dashboard" />
         )
       }
     />
@@ -44,11 +45,12 @@ function PublicRoute({ component: Component, authenticated, ...rest }) {
 function App() {
   const [loading, setLoading] = useState(false)
   const [authenticated, setAuthenticated] = useState(false)
-  const [tokens, setTokens] = useState('')
+  const [tokens, setTokens] = useState(localStorage.getItem('token'))
 
   useEffect(() => {
     if (tokens) {
       setAuthenticated(true)
+      localStorage.setItem('token', tokens);
       setLoading(false)
     } else {
       setAuthenticated(false)
@@ -61,7 +63,9 @@ function App() {
   ) : (
     <Router>
       <Switch>
-        <Route exact path="/" component={Login} />
+        <Route exact path="/">
+          {authenticated ? <Redirect to="/dashboard" /> : <Login setTokens={setTokens} />}
+        </Route>
         <PrivateRoute
           path="/dashboard"
           authenticated={authenticated}
