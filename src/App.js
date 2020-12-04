@@ -6,41 +6,8 @@ import {
   Redirect,
 } from 'react-router-dom'
 import Login from './pages/Login'
-import Dashboard from './pages/Dashboard'
-
-function PrivateRoute({ component: Component, authenticated, ...rest }) {
-  console.log("private",rest)
-  return (
-    <Route
-      {...rest}
-      render={(props) =>
-        authenticated === true ? (
-          <Component {...props} />
-        ) : (
-          <Redirect
-            to={{ pathname: '/login', state: { from: props.location } }}
-          />
-        )
-      }
-    />
-  )
-}
-
-function PublicRoute({ component: Component, authenticated, ...rest }) {
-  console.log("public",rest)
-  return (
-    <Route
-      {...rest}
-      render={(props) =>
-        authenticated === false ? (
-          <Component {...props} setTokens={rest.setTokens} />
-        ) : (
-          <Redirect to="/dashboard" />
-        )
-      }
-    />
-  )
-}
+import Dashboard from './layouts/Dashboard'
+import { PrivateRoute, PublicRoute } from './components/RouteHOC'
 
 function App() {
   const [loading, setLoading] = useState(false)
@@ -50,7 +17,7 @@ function App() {
   useEffect(() => {
     if (tokens) {
       setAuthenticated(true)
-      localStorage.setItem('token', tokens);
+      localStorage.setItem('token', tokens)
       setLoading(false)
     } else {
       setAuthenticated(false)
@@ -64,7 +31,11 @@ function App() {
     <Router>
       <Switch>
         <Route exact path="/">
-          {authenticated ? <Redirect to="/dashboard" /> : <Login setTokens={setTokens} />}
+          {authenticated ? (
+            <Redirect to="/dashboard" />
+          ) : (
+            <Login setTokens={setTokens} />
+          )}
         </Route>
         <PrivateRoute
           path="/dashboard"

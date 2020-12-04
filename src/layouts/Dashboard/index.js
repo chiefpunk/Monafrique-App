@@ -29,7 +29,7 @@ import {
   Switch,
   Redirect,
 } from 'react-router-dom'
-import ViewAllProducts from '../ViewAllProducts'
+import ViewAllProducts from '../../pages/ViewAllProducts'
 import { PrivateRoute, PublicRoute } from '../../components/RouteHOC'
 
 const drawerWidth = 280
@@ -243,7 +243,6 @@ function Dashboard({ authenticated }) {
     }
   }, [])
 
-  console.log(user)
   return (
     <div className={classes.root}>
       <CssBaseline />

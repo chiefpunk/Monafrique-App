@@ -56,7 +56,7 @@ const useStyles = makeStyles((theme) => ({
     position: 'relative',
   },
   buttonProgress: {
-    color: "red",
+    color: 'red',
     position: 'absolute',
     top: '50%',
     left: '50%',
@@ -68,10 +68,9 @@ const useStyles = makeStyles((theme) => ({
 function Login(props) {
   const classes = useStyles()
   const [values, handleChange] = useForm({ username: '', password: '' })
-  const [loading, setLoading] = useState(false);
-  const [helperText, setHelperText] = useState("");
+  const [loading, setLoading] = useState(false)
+  const [helperText, setHelperText] = useState('')
 
-  console.log(props);
   // const config = {
   //   headers: {
   //     'Access-Control-Allow-Origin': '*',
@@ -79,30 +78,25 @@ function Login(props) {
   // }
   const handleSubmit = (e) => {
     e.preventDefault()
-    if(values.username && values.password){
-    setLoading(true);
-    axios
-      .post(
-        SITE_URL + '/wp-json/api/v1/token',
-        {
+    if (values.username && values.password) {
+      setLoading(true)
+      axios
+        .post(SITE_URL + '/wp-json/api/v1/token', {
           username: values.username,
           password: values.password,
-        },
-      )
-      .then((response) => {
-        setLoading(false);
-        setHelperText("");
-        props.setTokens(response.data.jwt_token);
-      })
-      .catch((err) => {
-        setLoading(false);
-        setHelperText("");
-        console.log(err)
-      })
-    }
-    else
-    {
-      setHelperText("Please fill this field");
+        })
+        .then((response) => {
+          setLoading(false)
+          setHelperText('')
+          props.setTokens(response.data.jwt_token)
+        })
+        .catch((err) => {
+          setLoading(false)
+          setHelperText('')
+          console.log(err)
+        })
+    } else {
+      setHelperText('Please fill this field')
     }
   }
 
@@ -130,7 +124,7 @@ function Login(props) {
               value={values.username}
               onChange={handleChange}
               helperText={helperText}
-              error={helperText ? true:false}
+              error={helperText ? true : false}
               autoFocus
             />
             <TextField
@@ -145,26 +139,31 @@ function Login(props) {
               helperText={helperText}
               value={values.password}
               onChange={handleChange}
-              error = {helperText ? true : false}
+              error={helperText ? true : false}
               autoComplete="current-password"
             />
             <FormControlLabel
               control={<Checkbox value="remember" color="primary" />}
               label="Remember me"
             />
-             <div className={classes.wrapper}>
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              color="primary"
-              className={classes.submit}
-              disabled={loading}
-              // endIcon={loading?<CircularProgress color="secondary" size="medium" />:""}
-            >
-              Sign In
-            </Button>
-            {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
+            <div className={classes.wrapper}>
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                color="primary"
+                className={classes.submit}
+                disabled={loading}
+                // endIcon={loading?<CircularProgress color="secondary" size="medium" />:""}
+              >
+                Sign In
+              </Button>
+              {loading && (
+                <CircularProgress
+                  size={24}
+                  className={classes.buttonProgress}
+                />
+              )}
             </div>
             <Grid container>
               <Grid item xs>
