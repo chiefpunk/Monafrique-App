@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
 import {
   Route,
   BrowserRouter as Router,
@@ -10,43 +11,30 @@ import Dashboard from './layouts/Dashboard'
 import { PrivateRoute, PublicRoute } from './components/RouteHOC'
 
 function App() {
-  const [loading, setLoading] = useState(false)
-  const [authenticated, setAuthenticated] = useState(false)
-  const [tokens, setTokens] = useState(localStorage.getItem('token'))
-
+  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn)
+  const [authenticated, setAuthenticated] = useState(isLoggedIn)
   useEffect(() => {
-    if (tokens) {
-      setAuthenticated(true)
-      localStorage.setItem('token', tokens)
-      setLoading(false)
-    } else {
-      setAuthenticated(false)
-      setLoading(false)
-    }
-  }, [tokens])
+    setAuthenticated(isLoggedIn)
+  }, [isLoggedIn])
 
-  return loading ? (
-    <h2>Loading...</h2>
-  ) : (
+  return (
     <Router>
       <Switch>
         <Route exact path="/">
           {authenticated ? (
             <Redirect to="/dashboard" />
           ) : (
-            <Login setTokens={setTokens} />
+            <Login setAuthenticated={setAuthenticated} />
           )}
         </Route>
         <PrivateRoute
           path="/dashboard"
           authenticated={authenticated}
-          setTokens={setTokens}
           component={Dashboard}
         />
         <PublicRoute
           path="/login"
           authenticated={authenticated}
-          setTokens={setTokens}
           component={Login}
         />
       </Switch>

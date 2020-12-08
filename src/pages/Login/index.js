@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useDispatch } from 'react-redux'
 import {
   Button,
   CssBaseline,
@@ -12,12 +13,10 @@ import {
   CircularProgress,
   makeStyles,
 } from '@material-ui/core'
+
 import { useForm } from '../../hooks/useForm'
-import { SITE_URL } from '../../Utils/utils'
+import { login } from '../../actions/auth'
 import Slider from '../../components/Slider'
-
-import axios from 'axios'
-
 import 'react-awesome-slider/dist/styles.css'
 import logo from '../../assets/images/logo.png'
 
@@ -69,37 +68,18 @@ function Login(props) {
   const classes = useStyles()
   const [values, handleChange] = useForm({ username: '', password: '' })
   const [loading, setLoading] = useState(false)
-  const [helperText, setHelperText] = useState('')
-
-  // const config = {
-  //   headers: {
-  //     'Access-Control-Allow-Origin': '*',
-  //   },
-  // }
+  const dispatch = useDispatch()
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (values.username && values.password) {
-      setLoading(true)
-      axios
-        .post(SITE_URL + '/wp-json/api/v1/token', {
-          username: values.username,
-          password: values.password,
-        })
-        .then((response) => {
-          setLoading(false)
-          setHelperText('')
-          props.setTokens(response.data.jwt_token)
-        })
-        .catch((err) => {
-          setLoading(false)
-          setHelperText('')
-          console.log(err)
-        })
-    } else {
-      setHelperText('Please fill this field')
-    }
+    setLoading(true)
+    dispatch(login(values.username, values.password))
+      .then(() => {
+        setLoading(false)
+      })
+      .catch((err) => {
+        setLoading(false)
+      })
   }
-
   return (
     <Grid container component="main" className={classes.root}>
       <CssBaseline />
@@ -123,8 +103,6 @@ function Login(props) {
               autoComplete="username"
               value={values.username}
               onChange={handleChange}
-              helperText={helperText}
-              error={helperText ? true : false}
               autoFocus
             />
             <TextField
@@ -136,10 +114,8 @@ function Login(props) {
               label="Password"
               type="password"
               id="password"
-              helperText={helperText}
               value={values.password}
               onChange={handleChange}
-              error={helperText ? true : false}
               autoComplete="current-password"
             />
             <FormControlLabel

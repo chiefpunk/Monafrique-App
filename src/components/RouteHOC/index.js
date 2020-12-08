@@ -18,6 +18,7 @@ export function PrivateRoute({ component: Component, authenticated, ...rest }) {
 }
 
 export function PublicRoute({ component: Component, authenticated, ...rest }) {
+  console.log(authenticated)
   return (
     <Route
       {...rest}

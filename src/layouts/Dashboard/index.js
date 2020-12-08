@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { Switch, useHistory } from 'react-router-dom'
 import clsx from 'clsx'
 import { makeStyles } from '@material-ui/core/styles'
 import CssBaseline from '@material-ui/core/CssBaseline'
@@ -20,17 +22,17 @@ import MoreIcon from '@material-ui/icons/MoreVert'
 import MenuIcon from '@material-ui/icons/Menu'
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft'
 import NotificationsIcon from '@material-ui/icons/Notifications'
+
+import { getProducts } from '../../actions/products'
+import { logout } from '../../actions/auth'
+
 import { MainMenu } from '../../components/MainMenu'
-import Axios from 'axios'
-import { SITE_URL } from '../../Utils/utils'
-import {
-  Route,
-  BrowserRouter as Router,
-  Switch,
-  Redirect,
-} from 'react-router-dom'
+import { PrivateRoute } from '../../components/RouteHOC'
+import Loading from '../../components/Loading'
+
+import Dashboard from '../../pages/Dashboard'
 import ViewAllProducts from '../../pages/ViewAllProducts'
-import { PrivateRoute, PublicRoute } from '../../components/RouteHOC'
+import ViewOrders from '../../pages/ViewOrders'
 
 const drawerWidth = 280
 
@@ -140,18 +142,19 @@ const useStyles = makeStyles((theme) => ({
     overflow: 'auto',
     flexDirection: 'column',
   },
-  fixedHeight: {
-    height: 240,
-  },
+  fixedHeight: {},
 }))
 
-function Dashboard({ authenticated }) {
-  const [user, setUser] = useState({})
+function DashboardLayout() {
+  const user = useSelector((state) => state.auth.user)
+  const [isLoading, setIsLoading] = useState(true)
   const classes = useStyles()
   const [open, setOpen] = React.useState(true)
   const [anchorEl, setAnchorEl] = React.useState(null)
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null)
-
+  const authenticated = useSelector((state) => state.auth.isLoggedIn)
+  const dispatch = useDispatch()
+  const history = useHistory()
   const isMenuOpen = Boolean(anchorEl)
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl)
   const handleProfileMenuOpen = (event) => {
@@ -176,6 +179,19 @@ function Dashboard({ authenticated }) {
   const handleDrawerClose = () => {
     setOpen(false)
   }
+
+  useEffect(() => {
+    dispatch(getProducts())
+      .then(() => {
+        setIsLoading(false)
+      })
+      .catch((err) => setIsLoading(false))
+  }, [dispatch])
+
+  const LogOut = () => {
+    dispatch(logout())
+    history.push('/login')
+  }
   const menuId = 'primary-search-account-menu'
   const renderMenu = (
     <Menu
@@ -189,6 +205,7 @@ function Dashboard({ authenticated }) {
     >
       <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
       <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+      <MenuItem onClick={LogOut}>Log out</MenuItem>
     </Menu>
   )
 
@@ -225,24 +242,9 @@ function Dashboard({ authenticated }) {
     </Menu>
   )
   const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight)
-  useEffect(() => {
-    const user_token = localStorage.getItem('token')
-    if (user_token) {
-      Axios.get(SITE_URL + '/wp-json/wp/v2/users/me', {
-        headers: {
-          Authorization: `Bearer ${user_token}`,
-        },
-      })
-        .then((res) => {
-          setUser(res.data)
-          localStorage.setItem('user', JSON.stringify(res.data))
-        })
-        .catch((err) => {
-          // localStorage.clear()
-        })
-    }
-  }, [])
-
+  if (isLoading) {
+    return <Loading />
+  }
   return (
     <div className={classes.root}>
       <CssBaseline />
@@ -280,6 +282,9 @@ function Dashboard({ authenticated }) {
               color="inherit"
             >
               <AccountCircle />
+              <Typography className={classes.title} variant="h6" noWrap>
+                {' ' + user.nicename}
+              </Typography>
             </IconButton>
           </div>
           <div className={classes.sectionMobile}>
@@ -318,21 +323,26 @@ function Dashboard({ authenticated }) {
         <Container maxWidth="lg" className={classes.container}>
           <Grid container spacing={3}>
             {/* Chart */}
-            <Grid item xs={12} md={8} lg={9}>
+            <Grid item xs={12}>
               <Paper className={fixedHeightPaper}>
-                <Router>
-                  <Switch>
-                    <Route
-                      path="dashboard/view-all-products"
-                      component={ViewAllProducts}
-                    />
-                    {/* <PrivateRoute
-                      path="/dashboard/view-all-products"
-                      authenticated={authenticated}
-                      component={ViewAllProducts}
-                    /> */}
-                  </Switch>
-                </Router>
+                <Switch>
+                  <PrivateRoute
+                    exact
+                    path="/dashboard"
+                    authenticated={authenticated}
+                    component={Dashboard}
+                  />
+                  <PrivateRoute
+                    path="/dashboard/view-all-products"
+                    authenticated={authenticated}
+                    component={ViewAllProducts}
+                  />
+                  <PrivateRoute
+                    path="/dashboard/view-current-orders"
+                    authenticated={authenticated}
+                    component={ViewOrders}
+                  />
+                </Switch>
               </Paper>
             </Grid>
           </Grid>
@@ -344,4 +354,4 @@ function Dashboard({ authenticated }) {
   )
 }
 
-export default Dashboard
+export default DashboardLayout

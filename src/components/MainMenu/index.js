@@ -1,4 +1,5 @@
 import React from 'react'
+import { useHistory } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
@@ -24,16 +25,27 @@ const useStyles = makeStyles((theme) => ({
     paddingLeft: theme.spacing(4),
   },
 }))
-
+const routes = [
+  '/dashboard',
+  '',
+  '/dashboard/edit-my-products',
+  '/dashboard/view-all-products',
+  '/dashboard/upload-new-product',
+  '/dashboard/view-current-orders',
+  '/dashboard/update-profile-info',
+]
 export const MainMenu = () => {
   const classes = useStyles()
   const [selectedIndex, setSelectedIndex] = React.useState(0)
-  const [open, setOpen] = React.useState(true)
+  const [open, setOpen] = React.useState(false)
+  const history = useHistory()
 
   const handleListItemClick = (event, index) => {
     setSelectedIndex(index)
     if (index === 1) {
       setOpen(!open)
+    } else {
+      history.push(routes[index])
     }
   }
 
@@ -84,6 +96,7 @@ export const MainMenu = () => {
             </ListItemIcon>
             <ListItemText primary="View all products" />
           </ListItem>
+
           <ListItem
             className={classes.nested}
             selected={selectedIndex === 4}

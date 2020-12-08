@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+// import { useDispatch } from 'react-redux'
 import { makeStyles } from '@material-ui/core/styles'
 import {
   Typography,
@@ -12,16 +13,9 @@ import {
   TableRow,
   Button,
 } from '@material-ui/core'
-import { useSelector } from 'react-redux'
+// import { useSelector } from 'react-redux'
 
-const price_formatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-
-  // These options are needed to round to whole numbers if that's what you want.
-  //minimumFractionDigits: 0, // (this suffices for whole numbers, but will print 2500.10 as $2,500.1)
-  //maximumFractionDigits: 0, // (causes 2500.99 to be printed as $2,501)
-})
+// import Loading from '../../components/Loading'
 
 const columns = [
   { id: 'image', label: '', align: 'left', minWidth: 50 },
@@ -90,36 +84,24 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-export default function ViewAllProducts() {
+export default function ViewOrders() {
   const classes = useStyles()
   const [page, setPage] = React.useState(0)
+  //   const dispatch = useDispatch()
+  //   const [isLoading, setIsLoading] = React.useState(true)
   const [rowsPerPage, setRowsPerPage] = React.useState(10)
   const [rows, setRows] = React.useState([])
-  const products = useSelector((state) => state.products.products)
+  //   const orders = useSelector((state) => state.orders && state.orders.orders)
 
   useEffect(() => {
-    const data = products.map((product) => ({
-      image: product.images[0].src,
-      name: product.name,
-      sku: product.sku,
-      stock:
-        product.stock_status === 'instock'
-          ? 'In stock'
-          : product.stock_status === 'onbackorder'
-          ? 'On backorder'
-          : product.purchasable === 'inpurchaseable'
-          ? 'In purchaseable'
-          : '',
-      price: [
-        price_formatter.format(product.regular_price),
-        price_formatter.format(product.sale_price),
-      ],
-      categories: product.categories.map((category) => category.name),
-      tags: product.tags.map((tag) => tag.name),
-      dates: product.date_modified,
-    }))
+    // dispatch(getOrders())
+    //   .then(() => {
+    //     setIsLoading(false)
+    //   })
+    //   .catch((err) => setIsLoading(false))
+    const data = []
     setRows(data)
-  }, [products])
+  }, [])
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage)
@@ -129,7 +111,9 @@ export default function ViewAllProducts() {
     setRowsPerPage(+event.target.value)
     setPage(0)
   }
-
+  //   if (isLoading) {
+  //     return <Loading />
+  //   }
   return (
     <Paper className={classes.root}>
       <TableContainer className={classes.container}>
@@ -158,7 +142,7 @@ export default function ViewAllProducts() {
                   return (
                     <TableRow hover role="checkbox" tabIndex={-1} key={index}>
                       <TableCell align="left">
-                        <img width="50" src={row.image} alt="abc"></img>
+                        <img width="50" src={row.image} alt="def"></img>
                       </TableCell>
                       <TableCell align="left">
                         <Typography variant="overline" gutterBottom>
