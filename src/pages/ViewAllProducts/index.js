@@ -17,10 +17,6 @@ import { useSelector } from 'react-redux'
 const price_formatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
-
-  // These options are needed to round to whole numbers if that's what you want.
-  //minimumFractionDigits: 0, // (this suffices for whole numbers, but will print 2500.10 as $2,500.1)
-  //maximumFractionDigits: 0, // (causes 2500.99 to be printed as $2,501)
 })
 
 const columns = [
@@ -65,7 +61,7 @@ const columns = [
   {
     id: 'actions',
     label: 'Actions',
-    minWidth: 170,
+    minWidth: 250,
     align: 'center',
   },
 ]
@@ -87,6 +83,9 @@ const useStyles = makeStyles((theme) => ({
     '& > *': {
       margin: theme.spacing(1),
     },
+  },
+  name: {
+    fontWeight: 'bold',
   },
 }))
 
@@ -161,7 +160,11 @@ export default function ViewAllProducts() {
                         <img width="50" src={row.image} alt="abc"></img>
                       </TableCell>
                       <TableCell align="left">
-                        <Typography variant="overline" gutterBottom>
+                        <Typography
+                          variant="button"
+                          className={classes.name}
+                          gutterBottom
+                        >
                           {row.name}
                         </Typography>
                       </TableCell>
@@ -180,13 +183,17 @@ export default function ViewAllProducts() {
                         <p className={classes.sales_price}>{row.price[1]}</p>
                       </TableCell>
                       <TableCell align="left">
-                        <p variant="overline">{row.categories.toString()}</p>
+                        <Typography variant="overline" gutterBottom>
+                          {row.categories.toString()}
+                        </Typography>
                       </TableCell>
                       <TableCell align="left">
-                        <p variant="overline">{row.tags.toString()}</p>
+                        <Typography variant="overline" gutterBottom>
+                          {row.tags.toString()}
+                        </Typography>
                       </TableCell>
                       <TableCell align="left">
-                        <p variant="overline">{row.dates}</p>
+                        <p>{row.dates.split('T')[0]}</p>
                       </TableCell>
                       <TableCell align="center" className={classes.action_cell}>
                         <Button variant="contained" color="primary">

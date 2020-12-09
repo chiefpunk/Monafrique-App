@@ -12,7 +12,6 @@ import StorefrontIcon from '@material-ui/icons/Storefront'
 import Collapse from '@material-ui/core/Collapse'
 import ExpandLess from '@material-ui/icons/ExpandLess'
 import ExpandMore from '@material-ui/icons/ExpandMore'
-import EditIcon from '@material-ui/icons/Edit'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import AddShoppingCartSharpIcon from '@material-ui/icons/AddShoppingCartSharp'
 const useStyles = makeStyles((theme) => ({
@@ -74,17 +73,6 @@ export const MainMenu = () => {
       </ListItem>
       <Collapse in={open} timeout="auto" unmountOnExit>
         <List component="div" disablePadding>
-          <ListItem
-            className={classes.nested}
-            selected={selectedIndex === 2}
-            button
-            onClick={(event) => handleListItemClick(event, 2)}
-          >
-            <ListItemIcon>
-              <EditIcon />
-            </ListItemIcon>
-            <ListItemText primary="Edit my products" />
-          </ListItem>
           <ListItem
             className={classes.nested}
             selected={selectedIndex === 3}

@@ -11,6 +11,7 @@
     "axios": "^0.21.0",
     "formik": "^2.2.5",
     "immer": "^8.0.0",
+    "material-ui-dropzone": "^3.5.0",
     "node-sass": "^5.0.0",
     "react": "^17.0.1",
     "react-awesome-slider": "^4.1.0",

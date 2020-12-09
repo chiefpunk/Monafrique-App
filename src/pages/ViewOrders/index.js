@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react'
-// import { useDispatch } from 'react-redux'
 import { makeStyles } from '@material-ui/core/styles'
 import {
   Typography,
@@ -13,54 +12,32 @@ import {
   TableRow,
   Button,
 } from '@material-ui/core'
-// import { useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
-// import Loading from '../../components/Loading'
+const price_formatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+})
 
 const columns = [
-  { id: 'image', label: '', align: 'left', minWidth: 50 },
-  { id: 'name', label: 'Name', align: 'left', minWidth: 250 },
+  { id: 'order', label: 'Order', align: 'left', minWidth: 150 },
   {
-    id: 'sku',
-    label: 'SKU',
+    id: 'date',
+    label: 'Date',
     minWidth: 120,
     align: 'left',
   },
   {
-    id: 'stock',
-    label: 'Stock',
+    id: 'status',
+    label: 'Status',
     minWidth: 150,
     align: 'left',
   },
   {
-    id: 'price',
-    label: 'Price',
+    id: 'total',
+    label: 'Total',
     minWidth: 120,
     align: 'left',
-  },
-  {
-    id: 'categories',
-    label: 'Categories',
-    minWidth: 170,
-    align: 'left',
-  },
-  {
-    id: 'tags',
-    label: 'Tags',
-    minWidth: 170,
-    align: 'left',
-  },
-  {
-    id: 'date',
-    label: 'Dates',
-    minWidth: 170,
-    align: 'left',
-  },
-  {
-    id: 'actions',
-    label: 'Actions',
-    minWidth: 170,
-    align: 'center',
   },
 ]
 
@@ -87,21 +64,19 @@ const useStyles = makeStyles((theme) => ({
 export default function ViewOrders() {
   const classes = useStyles()
   const [page, setPage] = React.useState(0)
-  //   const dispatch = useDispatch()
-  //   const [isLoading, setIsLoading] = React.useState(true)
   const [rowsPerPage, setRowsPerPage] = React.useState(10)
+  const orders = useSelector((state) => state.orders.orders)
   const [rows, setRows] = React.useState([])
-  //   const orders = useSelector((state) => state.orders && state.orders.orders)
 
   useEffect(() => {
-    // dispatch(getOrders())
-    //   .then(() => {
-    //     setIsLoading(false)
-    //   })
-    //   .catch((err) => setIsLoading(false))
-    const data = []
+    const data = orders.map((order) => ({
+      order: `#${order.id} ${order.billing.first_name} ${order.billing.last_name}`,
+      date: order.date_modified,
+      status: order.status,
+      total: price_formatter.format(order.total),
+    }))
     setRows(data)
-  }, [])
+  }, [orders])
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage)
@@ -111,9 +86,7 @@ export default function ViewOrders() {
     setRowsPerPage(+event.target.value)
     setPage(0)
   }
-  //   if (isLoading) {
-  //     return <Loading />
-  //   }
+
   return (
     <Paper className={classes.root}>
       <TableContainer className={classes.container}>
@@ -142,43 +115,27 @@ export default function ViewOrders() {
                   return (
                     <TableRow hover role="checkbox" tabIndex={-1} key={index}>
                       <TableCell align="left">
-                        <img width="50" src={row.image} alt="def"></img>
-                      </TableCell>
-                      <TableCell align="left">
                         <Typography variant="overline" gutterBottom>
-                          {row.name}
+                          {row.order}
                         </Typography>
                       </TableCell>
+
                       <TableCell align="left">
                         <Typography variant="overline" gutterBottom>
-                          {row.sku}
+                          {row.date.split('T')[0]}
                         </Typography>
                       </TableCell>
+
                       <TableCell align="left">
                         <Typography variant="overline" gutterBottom>
-                          {row.stock}
+                          {row.status}
                         </Typography>
                       </TableCell>
+
                       <TableCell align="left">
-                        <p className={classes.regular_price}>{row.price[0]}</p>
-                        <p className={classes.sales_price}>{row.price[1]}</p>
-                      </TableCell>
-                      <TableCell align="left">
-                        <p variant="overline">{row.categories.toString()}</p>
-                      </TableCell>
-                      <TableCell align="left">
-                        <p variant="overline">{row.tags.toString()}</p>
-                      </TableCell>
-                      <TableCell align="left">
-                        <p variant="overline">{row.dates}</p>
-                      </TableCell>
-                      <TableCell align="center" className={classes.action_cell}>
-                        <Button variant="contained" color="primary">
-                          Edit
-                        </Button>
-                        <Button variant="contained" color="secondary">
-                          Delete
-                        </Button>
+                        <Typography variant="overline" gutterBottom>
+                          {row.total}
+                        </Typography>
                       </TableCell>
                     </TableRow>
                   )

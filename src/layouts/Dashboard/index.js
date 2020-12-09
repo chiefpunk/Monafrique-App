@@ -24,6 +24,7 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft'
 import NotificationsIcon from '@material-ui/icons/Notifications'
 
 import { getProducts } from '../../actions/products'
+import { getOrders } from '../../actions/orders'
 import { logout } from '../../actions/auth'
 
 import { MainMenu } from '../../components/MainMenu'
@@ -33,6 +34,7 @@ import Loading from '../../components/Loading'
 import Dashboard from '../../pages/Dashboard'
 import ViewAllProducts from '../../pages/ViewAllProducts'
 import ViewOrders from '../../pages/ViewOrders'
+import UploadProducts from '../../pages/UploadProducts'
 
 const drawerWidth = 280
 
@@ -186,6 +188,9 @@ function DashboardLayout() {
         setIsLoading(false)
       })
       .catch((err) => setIsLoading(false))
+    dispatch(getOrders()).then(() => {
+      console.log('sccess')
+    })
   }, [dispatch])
 
   const LogOut = () => {
@@ -320,7 +325,7 @@ function DashboardLayout() {
       </Drawer>
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
-        <Container maxWidth="lg" className={classes.container}>
+        <Container maxWidth="100%" className={classes.container}>
           <Grid container spacing={3}>
             {/* Chart */}
             <Grid item xs={12}>
@@ -331,6 +336,12 @@ function DashboardLayout() {
                     path="/dashboard"
                     authenticated={authenticated}
                     component={Dashboard}
+                  />
+                  <PrivateRoute
+                    exact
+                    path="/dashboard/upload-new-product"
+                    authenticated={authenticated}
+                    component={UploadProducts}
                   />
                   <PrivateRoute
                     path="/dashboard/view-all-products"

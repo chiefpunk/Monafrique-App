@@ -1,15 +1,15 @@
 import {
-  GET_PRODUCTS_SUCCESS,
-  GET_PRODUCTS_FAIL,
+  GET_ORDERS_SUCCESS,
+  GET_ORDERS_FAIL,
   SET_MESSAGE,
 } from '../constants/types'
-import * as ProductsService from '../services/products.service'
+import * as OrdersService from '../services/orders.service'
 
-export const getProducts = () => (dispatch) => {
-  return ProductsService.getProducts().then(
+export const getOrders = () => (dispatch) => {
+  return OrdersService.getOrders().then(
     (data) => {
       dispatch({
-        type: GET_PRODUCTS_SUCCESS,
+        type: GET_ORDERS_SUCCESS,
         payload: { data },
       })
       return Promise.resolve()
@@ -23,7 +23,7 @@ export const getProducts = () => (dispatch) => {
         error.toString()
 
       dispatch({
-        type: GET_PRODUCTS_FAIL,
+        type: GET_ORDERS_FAIL,
       })
 
       dispatch({
