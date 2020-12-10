@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useForm } from '../../hooks/useForm'
 import {
   FormControl,
   InputLabel,
@@ -95,23 +96,39 @@ function getStyles(name, personName, theme) {
 function UploadProduct() {
   const classes = useStyles()
   const theme = useTheme()
-  const [selectedCategories, setSelectedCategories] = React.useState([])
-  const [selectedCurrencies, setSelectedCurrencies] = React.useState([])
-  const [ppp, setPPP] = React.useState('')
-  const [weight, setWeight] = React.useState('')
+  const [product, handleChange] = useForm({
+    brand_name: '',
+    brand_ehos: '',
+    product_name: '',
+    product_description: '',
+    know_before_you_buy: '',
+    sku: '',
+    quantity: '',
+    selectedCategories: [],
+    colors: '',
+    dimensions: '',
+    selectedCurrencies: [],
+    retail_price: '',
+    sale_price: '',
+    wholesale_quantity: '',
+    wholesale_price: '',
+    ppp: '',
+    standard_usd: '',
+    standard_euro: '',
+    weight: '',
+    volumetric_weight: '',
+    upsells: '',
+    crosssells: '',
+    photo_drive_link: '',
+  })
 
-  const SelectCategory = (event) => {
-    setSelectedCategories(event.target.value)
-  }
-  const SelectCurrency = (event) => {
-    setSelectedCurrencies(event.target.value)
-  }
-  const handlePPPChange = (event) => {
-    setPPP(event.target.value)
-  }
-  const handleWeightChange = (event) => {
-    setWeight(event.target.value)
-  }
+  const [mainProductImage, setMainProductImage] = React.useState([])
+  const [imageWithDescription, setImagewithDescription] = React.useState([])
+  const [fullScreenImage, setFullScreenImage] = React.useState([])
+  const [knowBeforeImage, setKnowBeforeImage] = React.useState([])
+  const [productGalleries, setProductGalleries] = React.useState([])
+
+  console.log(mainProductImage[0])
 
   return (
     <div className={classes.root}>
@@ -119,14 +136,26 @@ function UploadProduct() {
       <form className={classes.form}>
         <FormControl className={classes.mb2}>
           <InputLabel htmlFor="my-input">Brand Name</InputLabel>
-          <Input id="my-input" aria-describedby="my-helper-text" />
+          <Input
+            id="my-input"
+            name="brand_name"
+            value={product.brand_name}
+            onChange={handleChange}
+            aria-describedby="my-helper-text"
+          />
           <FormHelperText id="my-helper-text">
             We'll never share your email.
           </FormHelperText>
         </FormControl>
         <FormControl className={classes.mb2}>
           <InputLabel htmlFor="my-input">Brand/ Collection Ethos</InputLabel>
-          <Input id="my-input" aria-describedby="my-helper-text" />
+          <Input
+            id="my-input"
+            name="brand_ethos"
+            value={product.brand_ethos}
+            onChange={handleChange}
+            aria-describedby="my-helper-text"
+          />
           <FormHelperText id="my-helper-text">
             Use this field to tell us about your brand story, or the ethos
             behind the collection that this product belongs to. You only need to
@@ -136,7 +165,13 @@ function UploadProduct() {
         </FormControl>
         <FormControl className={classes.mb2}>
           <InputLabel htmlFor="my-input">Product Name</InputLabel>
-          <Input id="my-input" aria-describedby="my-helper-text" />
+          <Input
+            id="my-input"
+            name="product_name"
+            value={product.product_name}
+            onChange={handleChange}
+            aria-describedby="my-helper-text"
+          />
           <FormHelperText id="my-helper-text">
             Enter your unique product name
           </FormHelperText>
@@ -146,7 +181,7 @@ function UploadProduct() {
             filesLimit={1}
             acceptedFiles={['image/*']}
             dropzoneText={'Main product image'}
-            onChange={(files) => console.log('Files:', files)}
+            onChange={(files) => setMainProductImage(files)}
           />
           <FormHelperText id="my-helper-text">
             This is your main product image, and should be about 602px by
@@ -161,6 +196,9 @@ function UploadProduct() {
             Product
             Description
             rows={4}
+            name="product_description"
+            value={product.product_description}
+            onChange={handleChange}
             variant="outlined"
           />
           <FormHelperText id="my-helper-text">
@@ -174,7 +212,7 @@ function UploadProduct() {
             filesLimit={1}
             acceptedFiles={['image/*']}
             dropzoneText={'Image with description'}
-            onChange={(files) => console.log('Files:', files)}
+            onChange={(files) => setImagewithDescription(files)}
           />
           <FormHelperText id="my-helper-text">
             This product image comes with another caption for you to provide
@@ -188,7 +226,7 @@ function UploadProduct() {
             filesLimit={1}
             acceptedFiles={['image/*']}
             dropzoneText={'Full Screen Image'}
-            onChange={(files) => console.log('Files:', files)}
+            onChange={(files) => setFullScreenImage(files)}
           />
           <FormHelperText id="my-helper-text">
             Attach a second product image (landscape size) mage Width: 1062px by
@@ -200,7 +238,7 @@ function UploadProduct() {
             filesLimit={1}
             acceptedFiles={['image/*']}
             dropzoneText={'Know Before You Buy Image'}
-            onChange={(files) => console.log('Files:', files)}
+            onChange={(files) => setKnowBeforeImage(files)}
           />
           <FormHelperText id="my-helper-text">
             This section comes with descriptive subheadings headings to let
@@ -216,7 +254,10 @@ function UploadProduct() {
             label="Know Before you buy"
             multiline
             Product
+            name="know_before_you_buy"
+            value={product.know_before_you_buy}
             Description
+            onChange={handleChange}
             rows={4}
             variant="outlined"
           />
@@ -230,14 +271,26 @@ function UploadProduct() {
         </FormControl>
         <FormControl className={classes.mb2}>
           <InputLabel htmlFor="my-input">SKU</InputLabel>
-          <Input id="my-input" aria-describedby="my-helper-text" />
+          <Input
+            id="my-input"
+            name="sku"
+            value={product.sku}
+            onChange={handleChange}
+            aria-describedby="my-helper-text"
+          />
           <FormHelperText id="my-helper-text">
             we'll generate an SKU, but if you have one enter it
           </FormHelperText>
         </FormControl>
         <FormControl className={classes.mb2}>
           <InputLabel htmlFor="my-input">Quantity *</InputLabel>
-          <Input id="my-input" aria-describedby="my-helper-text" />
+          <Input
+            id="my-input"
+            name="quantity"
+            value={product.quantity}
+            onChange={handleChange}
+            aria-describedby="my-helper-text"
+          />
           <FormHelperText id="my-helper-text">
             How many of these do you have in stock for sale online?
           </FormHelperText>
@@ -247,9 +300,10 @@ function UploadProduct() {
           <Select
             labelId="demo-mutiple-chip-label"
             id="demo-mutiple-chip"
+            name="selectedCategories"
             multiple
-            value={selectedCategories}
-            onChange={SelectCategory}
+            value={product.selectedCategories}
+            onChange={handleChange}
             input={<Input id="select-multiple-chip" />}
             renderValue={(selected) => (
               <div className={classes.chips}>
@@ -264,7 +318,7 @@ function UploadProduct() {
               <MenuItem
                 key={category}
                 value={category}
-                style={getStyles(category, selectedCategories, theme)}
+                style={getStyles(category, product.selectedCategories, theme)}
               >
                 {category}
               </MenuItem>
@@ -276,6 +330,9 @@ function UploadProduct() {
             id="outlined-multiline-static"
             label="Colors"
             multiline
+            name="colors"
+            value={product.colors}
+            onChange={handleChange}
             Product
             Description
             rows={4}
@@ -287,7 +344,13 @@ function UploadProduct() {
         </FormControl>
         <FormControl className={classes.mb2}>
           <InputLabel htmlFor="my-input">sizes/ various dimensions</InputLabel>
-          <Input id="my-input" aria-describedby="my-helper-text" />
+          <Input
+            id="my-input"
+            name="dimensions"
+            value={product.dimensions}
+            onChange={handleChange}
+            aria-describedby="my-helper-text"
+          />
         </FormControl>
         <FormControl className={classes.mb2}>
           <InputLabel htmlFor="my-input">Local currency</InputLabel>
@@ -295,8 +358,9 @@ function UploadProduct() {
             labelId="demo-mutiple-chip-label"
             id="demo-mutiple-chip"
             multiple
-            value={selectedCurrencies}
-            onChange={SelectCurrency}
+            name="selectedCurrencies"
+            value={product.selectedCurrencies}
+            onChange={handleChange}
             input={<Input id="select-multiple-chip" />}
             renderValue={(selected) => (
               <div className={classes.chips}>
@@ -311,7 +375,7 @@ function UploadProduct() {
               <MenuItem
                 key={currency}
                 value={currency}
-                style={getStyles(currency, selectedCategories, theme)}
+                style={getStyles(currency, product.selectedCategories, theme)}
               >
                 {currency}
               </MenuItem>
@@ -322,14 +386,26 @@ function UploadProduct() {
           <InputLabel htmlFor="my-input">
             Standard Retail Price in your local currency *
           </InputLabel>
-          <Input id="my-input" aria-describedby="my-helper-text" />
+          <Input
+            id="my-input"
+            name="retail_price"
+            value={product.retail_price}
+            onChange={handleChange}
+            aria-describedby="my-helper-text"
+          />
           <FormHelperText id="my-helper-text">
             How much does this item go for?
           </FormHelperText>
         </FormControl>
         <FormControl className={classes.mb2}>
           <InputLabel htmlFor="my-input">Sale Price *</InputLabel>
-          <Input id="my-input" aria-describedby="my-helper-text" />
+          <Input
+            id="my-input"
+            name="sale_price"
+            value={product.sale_price}
+            onChange={handleChange}
+            aria-describedby="my-helper-text"
+          />
           <FormHelperText id="my-helper-text">
             We automatically list items on sale as part of our targeted
             marketing efforts. Please enter your preferred maximum percentage we
@@ -338,7 +414,13 @@ function UploadProduct() {
         </FormControl>
         <FormControl className={classes.mb2}>
           <InputLabel htmlFor="my-input">Wholesale quantity *</InputLabel>
-          <Input id="my-input" aria-describedby="my-helper-text" />
+          <Input
+            id="my-input"
+            name="wholesale_quantity"
+            value={product.wholesale_quantity}
+            onChange={handleChange}
+            aria-describedby="my-helper-text"
+          />
           <FormHelperText id="my-helper-text">
             What quantity of products do customers have to buy to get a
             wholesale price?
@@ -346,7 +428,13 @@ function UploadProduct() {
         </FormControl>
         <FormControl className={classes.mb2}>
           <InputLabel htmlFor="my-input">Wholesale Price </InputLabel>
-          <Input id="my-input" aria-describedby="my-helper-text" />
+          <Input
+            id="my-input"
+            name="wholesale_price"
+            value={product.wholesale_price}
+            onChange={handleChange}
+            aria-describedby="my-helper-text"
+          />
           <FormHelperText id="my-helper-text">
             How much discount of the original price do you offer to customers
             buying in bulk e.g. 50% off
@@ -357,8 +445,9 @@ function UploadProduct() {
           <Select
             labelId="demo-simple-select-label"
             id="demo-simple-select"
-            value={ppp}
-            onChange={handlePPPChange}
+            name="ppp"
+            value={product.ppp}
+            onChange={handleChange}
           >
             <MenuItem value="yes">Yes</MenuItem>
             <MenuItem value="no">No</MenuItem>
@@ -368,7 +457,13 @@ function UploadProduct() {
           <InputLabel htmlFor="my-input">
             Standard USD currency price
           </InputLabel>
-          <Input id="my-input" aria-describedby="my-helper-text" />
+          <Input
+            id="my-input"
+            name="standard_usd"
+            value={product.standard_usd}
+            onChange={handleChange}
+            aria-describedby="my-helper-text"
+          />
           <FormHelperText id="my-helper-text">
             Leave this field blank if we can convert the price of your product
             based on prevailing interest rates. However if you have different
@@ -379,7 +474,13 @@ function UploadProduct() {
           <InputLabel htmlFor="my-input">
             Standard Euro currency price
           </InputLabel>
-          <Input id="my-input" aria-describedby="my-helper-text" />
+          <Input
+            id="my-input"
+            name="standard_euro"
+            value={product.standard_euro}
+            onChange={handleChange}
+            aria-describedby="my-helper-text"
+          />
           <FormHelperText id="my-helper-text">
             Leave this field blank if we can convert the price of your product
             based on prevailing interest rates. However if you have different
@@ -391,8 +492,9 @@ function UploadProduct() {
           <RadioGroup
             aria-label="weight"
             name="weight"
-            value={weight}
-            onChange={handleWeightChange}
+            name="weight"
+            value={product.weight}
+            onChange={handleChange}
           >
             <FormControlLabel value="2.5" control={<Radio />} label="<2.5kg" />
             <FormControlLabel
@@ -424,11 +526,23 @@ function UploadProduct() {
         </FormControl>
         <FormControl className={classes.mb2}>
           <InputLabel htmlFor="my-input">volumetric weight (kg)</InputLabel>
-          <Input id="my-input" aria-describedby="my-helper-text" />
+          <Input
+            id="my-input"
+            name="volumetric_weight"
+            value={product.volumetric_weight}
+            onChange={handleChange}
+            aria-describedby="my-helper-text"
+          />
         </FormControl>
         <FormControl className={classes.mb2}>
           <InputLabel htmlFor="my-input">Up sells *</InputLabel>
-          <Input id="my-input" aria-describedby="my-helper-text" />
+          <Input
+            id="my-input"
+            value={product.upsells}
+            name="upsells"
+            onChange={handleChange}
+            aria-describedby="my-helper-text"
+          />
           <FormHelperText id="my-helper-text">
             Are there more expensive products that are similar or in the same
             subcategory as this one that customers may like? List their names
@@ -437,7 +551,13 @@ function UploadProduct() {
         </FormControl>
         <FormControl className={classes.mb2}>
           <InputLabel htmlFor="my-input">Cross sells *</InputLabel>
-          <Input id="my-input" aria-describedby="my-helper-text" />
+          <Input
+            id="my-input"
+            value={product.crosssells}
+            name="crosssells"
+            onChange={handleChange}
+            aria-describedby="my-helper-text"
+          />
           <FormHelperText id="my-helper-text">
             Are there any products that go well with this product e.g. can be
             used together or complete a look, living room, setee. Please list
@@ -449,13 +569,27 @@ function UploadProduct() {
             filesLimit={3}
             acceptedFiles={['image/*']}
             dropzoneText={'Product gallery images'}
-            onChange={(files) => console.log('Files:', files)}
+            onChange={(files) => setProductGalleries(files)}
           />
           <FormHelperText id="my-helper-text">
             Attach a second product image (landscape size) mage Width: 1062px by
             Height: 573px)
           </FormHelperText>
         </Box>
+        <FormControl className={classes.mb2}>
+          <InputLabel htmlFor="my-input">Photo Drive Link</InputLabel>
+          <Input
+            id="my-input"
+            value={product.photo_drive_link}
+            name="photo_drive_link"
+            onChange={handleChange}
+            aria-describedby="my-helper-text"
+          />
+          <FormHelperText id="my-helper-text">
+            If you have photos already stored in a drive/dropbox please include
+            the url link here
+          </FormHelperText>
+        </FormControl>
         <Box className={classes.footer}>
           <Button variant="contained" color="primary">
             Cancel
