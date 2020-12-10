@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { useForm } from '../../hooks/useForm'
 import {
   FormControl,
@@ -129,6 +129,10 @@ function UploadProduct() {
   const [productGalleries, setProductGalleries] = React.useState([])
 
   console.log(mainProductImage[0])
+  console.log(imageWithDescription[0])
+  console.log(fullScreenImage[0])
+  console.log(knowBeforeImage[0])
+  console.log(productGalleries[0])
 
   return (
     <div className={classes.root}>
@@ -491,7 +495,6 @@ function UploadProduct() {
           <FormLabel component="legend">Weight *</FormLabel>
           <RadioGroup
             aria-label="weight"
-            name="weight"
             name="weight"
             value={product.weight}
             onChange={handleChange}
