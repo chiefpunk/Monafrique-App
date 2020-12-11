@@ -325,7 +325,7 @@ function DashboardLayout() {
       </Drawer>
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
-        <Container maxWidth="100%" className={classes.container}>
+        <Container className={classes.container}>
           <Grid container spacing={3}>
             {/* Chart */}
             <Grid item xs={12}>

@@ -1,4 +1,5 @@
 import React from 'react'
+import { useDispatch } from 'react-redux'
 import { useForm } from '../../hooks/useForm'
 import {
   FormControl,
@@ -15,9 +16,13 @@ import {
   Radio,
   FormControlLabel,
   Button,
+  CircularProgress,
 } from '@material-ui/core'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { DropzoneArea } from 'material-ui-dropzone'
+import { postProduct } from '../../actions/products'
+import authHeader from '../../services/auth-header'
+import { POST_IMAGE_API_URL } from '../../constants/api'
 
 const categories = [
   'Accessories (scarves, bags, jewellery)',
@@ -40,6 +45,10 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  wrapper: {
+    margin: theme.spacing(1),
+    position: 'relative',
   },
   paper: {
     padding: theme.spacing(2),
@@ -73,6 +82,14 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     justifyContent: 'space-between',
   },
+  buttonProgress: {
+    color: 'green',
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12,
+  },
 }))
 
 const ITEM_HEIGHT = 48
@@ -94,6 +111,7 @@ function getStyles(name, personName, theme) {
   }
 }
 function UploadProduct() {
+  const dispatch = useDispatch()
   const classes = useStyles()
   const theme = useTheme()
   const [product, handleChange] = useForm({
@@ -127,24 +145,56 @@ function UploadProduct() {
   const [fullScreenImage, setFullScreenImage] = React.useState([])
   const [knowBeforeImage, setKnowBeforeImage] = React.useState([])
   const [productGalleries, setProductGalleries] = React.useState([])
+  const [isUploading, setIsUploading] = React.useState(false)
 
   console.log(mainProductImage[0])
   console.log(imageWithDescription[0])
   console.log(fullScreenImage[0])
   console.log(knowBeforeImage[0])
   console.log(productGalleries[0])
-
+  const uploadProduct = (e) => {
+    e.preventDefault()
+    setIsUploading(true)
+    const formData = new FormData()
+    formData.append('file', mainProductImage[0])
+    formData.append('title', product.product_name)
+    fetch(POST_IMAGE_API_URL, {
+      method: 'POST',
+      headers: authHeader(),
+      body: formData,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        dispatch(
+          postProduct({
+            name: product.product_name,
+            description: product.product_description,
+            images: [{ src: data.source_url }],
+          }),
+        )
+          .then((data) => {
+            console.log(data)
+            setIsUploading(false)
+          })
+          .catch((err) => console.log(err))
+        //send image url to backend
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+  }
   return (
     <div className={classes.root}>
       <h1>Upload product</h1>
-      <form className={classes.form}>
+      <form className={classes.form} onSubmit={uploadProduct}>
         <FormControl className={classes.mb2}>
-          <InputLabel htmlFor="my-input">Brand Name</InputLabel>
+          <InputLabel htmlFor="my-input">Brand Name *</InputLabel>
           <Input
             id="my-input"
             name="brand_name"
             value={product.brand_name}
             onChange={handleChange}
+            required
             aria-describedby="my-helper-text"
           />
           <FormHelperText id="my-helper-text">
@@ -152,13 +202,15 @@ function UploadProduct() {
           </FormHelperText>
         </FormControl>
         <FormControl className={classes.mb2}>
-          <InputLabel htmlFor="my-input">Brand/ Collection Ethos</InputLabel>
-          <Input
-            id="my-input"
+          <TextField
+            id="outlined-multiline-static"
+            label="Brand Ethos"
+            multiline
             name="brand_ethos"
             value={product.brand_ethos}
             onChange={handleChange}
-            aria-describedby="my-helper-text"
+            rows={4}
+            variant="outlined"
           />
           <FormHelperText id="my-helper-text">
             Use this field to tell us about your brand story, or the ethos
@@ -168,12 +220,13 @@ function UploadProduct() {
           </FormHelperText>
         </FormControl>
         <FormControl className={classes.mb2}>
-          <InputLabel htmlFor="my-input">Product Name</InputLabel>
+          <InputLabel htmlFor="my-input">Product Name*</InputLabel>
           <Input
             id="my-input"
             name="product_name"
             value={product.product_name}
             onChange={handleChange}
+            required
             aria-describedby="my-helper-text"
           />
           <FormHelperText id="my-helper-text">
@@ -184,7 +237,7 @@ function UploadProduct() {
           <DropzoneArea
             filesLimit={1}
             acceptedFiles={['image/*']}
-            dropzoneText={'Main product image'}
+            dropzoneText={'Main product image *'}
             onChange={(files) => setMainProductImage(files)}
           />
           <FormHelperText id="my-helper-text">
@@ -197,9 +250,8 @@ function UploadProduct() {
             id="outlined-multiline-static"
             label="Product Description"
             multiline
-            Product
-            Description
             rows={4}
+            required
             name="product_description"
             value={product.product_description}
             onChange={handleChange}
@@ -215,7 +267,7 @@ function UploadProduct() {
           <DropzoneArea
             filesLimit={1}
             acceptedFiles={['image/*']}
-            dropzoneText={'Image with description'}
+            dropzoneText={'Image with description *'}
             onChange={(files) => setImagewithDescription(files)}
           />
           <FormHelperText id="my-helper-text">
@@ -229,7 +281,7 @@ function UploadProduct() {
           <DropzoneArea
             filesLimit={1}
             acceptedFiles={['image/*']}
-            dropzoneText={'Full Screen Image'}
+            dropzoneText={'Full Screen Image *'}
             onChange={(files) => setFullScreenImage(files)}
           />
           <FormHelperText id="my-helper-text">
@@ -241,7 +293,7 @@ function UploadProduct() {
           <DropzoneArea
             filesLimit={1}
             acceptedFiles={['image/*']}
-            dropzoneText={'Know Before You Buy Image'}
+            dropzoneText={'Know Before You Buy Image *'}
             onChange={(files) => setKnowBeforeImage(files)}
           />
           <FormHelperText id="my-helper-text">
@@ -257,12 +309,11 @@ function UploadProduct() {
             id="outlined-multiline-static"
             label="Know Before you buy"
             multiline
-            Product
             name="know_before_you_buy"
             value={product.know_before_you_buy}
-            Description
             onChange={handleChange}
             rows={4}
+            required
             variant="outlined"
           />
           <FormHelperText id="my-helper-text">
@@ -291,6 +342,7 @@ function UploadProduct() {
           <Input
             id="my-input"
             name="quantity"
+            required
             value={product.quantity}
             onChange={handleChange}
             aria-describedby="my-helper-text"
@@ -300,12 +352,13 @@ function UploadProduct() {
           </FormHelperText>
         </FormControl>
         <FormControl className={classes.mb2}>
-          <InputLabel htmlFor="my-input">Categories</InputLabel>
+          <InputLabel htmlFor="my-input">Categories *</InputLabel>
           <Select
             labelId="demo-mutiple-chip-label"
             id="demo-mutiple-chip"
             name="selectedCategories"
             multiple
+            required
             value={product.selectedCategories}
             onChange={handleChange}
             input={<Input id="select-multiple-chip" />}
@@ -337,8 +390,6 @@ function UploadProduct() {
             name="colors"
             value={product.colors}
             onChange={handleChange}
-            Product
-            Description
             rows={4}
             variant="outlined"
           />
@@ -406,6 +457,7 @@ function UploadProduct() {
           <Input
             id="my-input"
             name="sale_price"
+            required
             value={product.sale_price}
             onChange={handleChange}
             aria-describedby="my-helper-text"
@@ -421,6 +473,7 @@ function UploadProduct() {
           <Input
             id="my-input"
             name="wholesale_quantity"
+            required
             value={product.wholesale_quantity}
             onChange={handleChange}
             aria-describedby="my-helper-text"
@@ -498,6 +551,7 @@ function UploadProduct() {
             name="weight"
             value={product.weight}
             onChange={handleChange}
+            required
           >
             <FormControlLabel value="2.5" control={<Radio />} label="<2.5kg" />
             <FormControlLabel
@@ -543,6 +597,7 @@ function UploadProduct() {
             id="my-input"
             value={product.upsells}
             name="upsells"
+            required
             onChange={handleChange}
             aria-describedby="my-helper-text"
           />
@@ -558,6 +613,7 @@ function UploadProduct() {
             id="my-input"
             value={product.crosssells}
             name="crosssells"
+            required
             onChange={handleChange}
             aria-describedby="my-helper-text"
           />
@@ -597,9 +653,19 @@ function UploadProduct() {
           <Button variant="contained" color="primary">
             Cancel
           </Button>
-          <Button variant="contained" color="secondary">
-            Save
-          </Button>
+          <div className={classes.wrapper}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={isUploading}
+            >
+              Save
+            </Button>
+            {isUploading && (
+              <CircularProgress size={24} className={classes.buttonProgress} />
+            )}
+          </div>
         </Box>
       </form>
     </div>

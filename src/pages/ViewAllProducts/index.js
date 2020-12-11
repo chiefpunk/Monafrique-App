@@ -95,12 +95,12 @@ export default function ViewAllProducts() {
   const [rowsPerPage, setRowsPerPage] = React.useState(10)
   const [rows, setRows] = React.useState([])
   const products = useSelector((state) => state.products.products)
-
+  console.log(products)
   useEffect(() => {
     const data = products.map((product) => ({
-      image: product.images[0].src,
-      name: product.name,
-      sku: product.sku,
+      image: product.images[0] && product.images[0].src,
+      name: product.name && product.name,
+      sku: product.sku && product.sku,
       stock:
         product.stock_status === 'instock'
           ? 'In stock'
@@ -110,12 +110,14 @@ export default function ViewAllProducts() {
           ? 'In purchaseable'
           : '',
       price: [
-        price_formatter.format(product.regular_price),
-        price_formatter.format(product.sale_price),
+        price_formatter.format(product.regular_price && product.regular_price),
+        price_formatter.format(product.sale_price && product.sale_price),
       ],
-      categories: product.categories.map((category) => category.name),
-      tags: product.tags.map((tag) => tag.name),
-      dates: product.date_modified,
+      categories:
+        product.categories &&
+        product.categories.map((category) => category.name),
+      tags: product.tags && product.tags.map((tag) => tag.name),
+      dates: product.date_modified && product.date_modified,
     }))
     setRows(data)
   }, [products])
