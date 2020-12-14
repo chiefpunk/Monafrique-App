@@ -23,7 +23,7 @@ import MenuIcon from '@material-ui/icons/Menu'
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft'
 import NotificationsIcon from '@material-ui/icons/Notifications'
 
-import { getProducts } from '../../actions/products'
+import { getProducts, getCategories, getTags } from '../../actions/products'
 import { getOrders } from '../../actions/orders'
 import { logout } from '../../actions/auth'
 
@@ -189,6 +189,12 @@ function DashboardLayout() {
       })
       .catch((err) => setIsLoading(false))
     dispatch(getOrders()).then(() => {
+      console.log('sccess')
+    })
+    dispatch(getCategories()).then(() => {
+      console.log('sccess')
+    })
+    dispatch(getTags()).then(() => {
       console.log('sccess')
     })
   }, [dispatch])

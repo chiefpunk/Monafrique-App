@@ -87,6 +87,9 @@ const useStyles = makeStyles((theme) => ({
   name: {
     fontWeight: 'bold',
   },
+  cursor_point: {
+    cursor: 'pointer',
+  },
 }))
 
 export default function ViewAllProducts() {
@@ -118,6 +121,7 @@ export default function ViewAllProducts() {
         product.categories.map((category) => category.name),
       tags: product.tags && product.tags.map((tag) => tag.name),
       dates: product.date_modified && product.date_modified,
+      link: product.permalink,
     }))
     setRows(data)
   }, [products])
@@ -161,7 +165,11 @@ export default function ViewAllProducts() {
                       <TableCell align="left">
                         <img width="50" src={row.image} alt="abc"></img>
                       </TableCell>
-                      <TableCell align="left">
+                      <TableCell
+                        className={classes.cursor_point}
+                        align="left"
+                        onClick={() => window.open(row.link)}
+                      >
                         <Typography
                           variant="button"
                           className={classes.name}

@@ -1,5 +1,5 @@
 import React from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useForm } from '../../hooks/useForm'
 import {
   FormControl,
@@ -24,19 +24,6 @@ import { postProduct } from '../../actions/products'
 import authHeader from '../../services/auth-header'
 import { POST_IMAGE_API_URL } from '../../constants/api'
 
-const categories = [
-  'Accessories (scarves, bags, jewellery)',
-  'decor',
-  'Fashion',
-  'body and beauty',
-  'shoes',
-  'furniture',
-  'kids',
-  'art (fine art)',
-  "art (objets d'art)",
-  'home & living (fragrances, functional items e.g plates)',
-  'Tribal Art',
-]
 const local_currencies = ['usd', 'euro', 'naira', 'gbp']
 
 const useStyles = makeStyles((theme) => ({
@@ -114,6 +101,8 @@ function UploadProduct() {
   const dispatch = useDispatch()
   const classes = useStyles()
   const theme = useTheme()
+  let categories = useSelector((state) => state.products.categories)
+  // categories = categories.map((category) => category.name)
   const [product, handleChange] = useForm({
     brand_name: '',
     brand_ehos: '',
@@ -122,7 +111,7 @@ function UploadProduct() {
     know_before_you_buy: '',
     sku: '',
     quantity: '',
-    selectedCategories: [],
+    selectedCategoriesId: [],
     colors: '',
     dimensions: '',
     selectedCurrencies: [],
@@ -152,6 +141,7 @@ function UploadProduct() {
   console.log(fullScreenImage[0])
   console.log(knowBeforeImage[0])
   console.log(productGalleries[0])
+
   const uploadProduct = (e) => {
     e.preventDefault()
     setIsUploading(true)
@@ -167,9 +157,21 @@ function UploadProduct() {
       .then((data) => {
         dispatch(
           postProduct({
+            acf: {
+              sections: [
+                {
+                  acf_fc_layout: 'know_before_you_buy',
+                  title: product.know_before_you_buy,
+                },
+              ],
+            },
             name: product.product_name,
             description: product.product_description,
             images: [{ src: data.source_url }],
+            sku: product.sku,
+            regular_price: product.retail_price,
+            sale_price: product.sale_price,
+            stock_quantity: product.quantity,
           }),
         )
           .then((data) => {
@@ -177,7 +179,6 @@ function UploadProduct() {
             setIsUploading(false)
           })
           .catch((err) => console.log(err))
-        //send image url to backend
       })
       .catch((err) => {
         console.log(err)
@@ -356,28 +357,30 @@ function UploadProduct() {
           <Select
             labelId="demo-mutiple-chip-label"
             id="demo-mutiple-chip"
-            name="selectedCategories"
+            name="selectedCategoriesId"
             multiple
             required
-            value={product.selectedCategories}
+            value={product.selectedCategoriesId}
             onChange={handleChange}
             input={<Input id="select-multiple-chip" />}
             renderValue={(selected) => (
               <div className={classes.chips}>
-                {selected.map((value) => (
-                  <Chip key={value} label={value} className={classes.chip} />
+                {selected.map((id) => (
+                  <Chip
+                    key={id}
+                    label={
+                      categories.find((category) => category.id === id).name
+                    }
+                    className={classes.chip}
+                  />
                 ))}
               </div>
             )}
             MenuProps={MenuProps}
           >
             {categories.map((category) => (
-              <MenuItem
-                key={category}
-                value={category}
-                style={getStyles(category, product.selectedCategories, theme)}
-              >
-                {category}
+              <MenuItem key={category.id} value={category.id}>
+                {category.name}
               </MenuItem>
             ))}
           </Select>
@@ -430,7 +433,7 @@ function UploadProduct() {
               <MenuItem
                 key={currency}
                 value={currency}
-                style={getStyles(currency, product.selectedCategories, theme)}
+                style={getStyles(currency, product.selectedCategoriesId, theme)}
               >
                 {currency}
               </MenuItem>
