@@ -10,7 +10,6 @@ import {
   TableHead,
   TablePagination,
   TableRow,
-  Button,
 } from '@material-ui/core'
 import { useSelector } from 'react-redux'
 
@@ -58,12 +57,12 @@ const columns = [
     minWidth: 170,
     align: 'left',
   },
-  {
-    id: 'actions',
-    label: 'Actions',
-    minWidth: 250,
-    align: 'center',
-  },
+  // {
+  //   id: 'actions',
+  //   label: 'Actions',
+  //   minWidth: 250,
+  //   align: 'center',
+  // },
 ]
 
 const useStyles = makeStyles((theme) => ({
@@ -205,14 +204,14 @@ export default function ViewAllProducts() {
                       <TableCell align="left">
                         <p>{row.dates.split('T')[0]}</p>
                       </TableCell>
-                      <TableCell align="center" className={classes.action_cell}>
+                      {/* <TableCell align="center" className={classes.action_cell}>
                         <Button variant="contained" color="primary">
                           Edit
                         </Button>
                         <Button variant="contained" color="secondary">
                           Delete
                         </Button>
-                      </TableCell>
+                      </TableCell> */}
                     </TableRow>
                   )
                 })}

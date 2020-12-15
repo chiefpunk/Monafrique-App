@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useForm } from '../../hooks/useForm'
 import {
@@ -17,14 +17,20 @@ import {
   FormControlLabel,
   Button,
   CircularProgress,
+  Snackbar,
 } from '@material-ui/core'
+import MuiAlert from '@material-ui/lab/Alert'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
+import CreatableSelect from 'react-select/creatable'
 import { DropzoneArea } from 'material-ui-dropzone'
 import { postProduct } from '../../actions/products'
 import authHeader from '../../services/auth-header'
 import { POST_IMAGE_API_URL } from '../../constants/api'
 
 const local_currencies = ['usd', 'euro', 'naira', 'gbp']
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />
+}
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -77,6 +83,10 @@ const useStyles = makeStyles((theme) => ({
     marginTop: -12,
     marginLeft: -12,
   },
+  colorsContainer: {
+    textAlign: 'left',
+    marginTop: 10,
+  },
 }))
 
 const ITEM_HEIGHT = 48
@@ -101,19 +111,31 @@ function UploadProduct() {
   const dispatch = useDispatch()
   const classes = useStyles()
   const theme = useTheme()
-  let categories = useSelector((state) => state.products.categories)
+  const products = useSelector((state) => state.products.products)
+  const categories = useSelector((state) => state.products.categories)
+  const [sellsOption, setSellsOption] = useState([])
+  useEffect(() => {
+    let sellsOptions = products.map((product) => ({
+      value: product.id,
+      label: product.name,
+    }))
+    setSellsOption(sellsOptions)
+  }, [products])
+
+  console.log(sellsOption)
   // categories = categories.map((category) => category.name)
   const [product, handleChange] = useForm({
     brand_name: '',
-    brand_ehos: '',
+    brand_ethos: '',
     product_name: '',
     product_description: '',
     know_before_you_buy: '',
     sku: '',
     quantity: '',
     selectedCategoriesId: [],
-    colors: '',
-    dimensions: '',
+    dimensionsLength: '',
+    dimensionsWidth: '',
+    dimensionsHeight: '',
     selectedCurrencies: [],
     retail_price: '',
     sale_price: '',
@@ -124,10 +146,11 @@ function UploadProduct() {
     standard_euro: '',
     weight: '',
     volumetric_weight: '',
-    upsells: '',
-    crosssells: '',
     photo_drive_link: '',
   })
+  const [colors, setColors] = useState([])
+  const [upSells, setUpSells] = useState([])
+  const [crossSells, setCrossSells] = useState([])
 
   const [mainProductImage, setMainProductImage] = React.useState([])
   const [imageWithDescription, setImagewithDescription] = React.useState([])
@@ -135,7 +158,36 @@ function UploadProduct() {
   const [knowBeforeImage, setKnowBeforeImage] = React.useState([])
   const [productGalleries, setProductGalleries] = React.useState([])
   const [isUploading, setIsUploading] = React.useState(false)
+  const [alertOpen, setAlertOpen] = useState(false)
 
+  const handleColorChange = (newValue, actionMeta) => {
+    console.log(newValue)
+    setColors([...colors, newValue.value])
+  }
+  const handleUpSellsChange = (newValue, actionMeta) => {
+    if (upSells.length <= 3) setUpSells([...upSells, newValue.value])
+  }
+  const handleCrossSellsChange = (newValue, actionMeta) => {
+    if (crossSells.length <= 3) setCrossSells([...crossSells, newValue.value])
+  }
+
+  const handleDeleteColor = (val) => {
+    setColors(colors.filter((color) => color !== val))
+  }
+
+  const handleDeleteUpsells = (val) => {
+    setUpSells(upSells.filter((upSell) => upSell !== val))
+  }
+  const handleDeleteCrossSells = (val) => {
+    setCrossSells(crossSells.filter((crossSell) => crossSell !== val))
+  }
+
+  const alertClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return
+    }
+    setAlertOpen(false)
+  }
   console.log(mainProductImage[0])
   console.log(imageWithDescription[0])
   console.log(fullScreenImage[0])
@@ -160,22 +212,34 @@ function UploadProduct() {
             acf: {
               sections: [
                 {
-                  acf_fc_layout: 'know_before_you_buy',
                   title: product.know_before_you_buy,
                 },
               ],
             },
             name: product.product_name,
             description: product.product_description,
+            short_description: product.brand_ethos,
             images: [{ src: data.source_url }],
             sku: product.sku,
             regular_price: product.retail_price,
             sale_price: product.sale_price,
-            stock_quantity: product.quantity,
+            stock_quantity: parseInt(product.quantity),
+            weight: product.weight,
+            categories: product.selectedCategoriesId.map((id) => ({
+              id: id,
+            })),
+            attributes: [{ name: 'Color', options: colors }],
+            dimensions: {
+              height: product.dimensionsHeight,
+              length: product.dimensionsLength,
+              width: product.dimensionsWidth,
+            },
+            cross_sell_ids: crossSells,
+            upsell_ids: upSells,
           }),
         )
           .then((data) => {
-            console.log(data)
+            setAlertOpen(true)
             setIsUploading(false)
           })
           .catch((err) => console.log(err))
@@ -186,6 +250,11 @@ function UploadProduct() {
   }
   return (
     <div className={classes.root}>
+      <Snackbar open={alertOpen} autoHideDuration={6000} onClose={alertClose}>
+        <Alert onClose={alertClose} severity="success">
+          Product uploaded successfully
+        </Alert>
+      </Snackbar>
       <h1>Upload product</h1>
       <form className={classes.form} onSubmit={uploadProduct}>
         <FormControl className={classes.mb2}>
@@ -343,6 +412,7 @@ function UploadProduct() {
           <Input
             id="my-input"
             name="quantity"
+            type="number"
             required
             value={product.quantity}
             onChange={handleChange}
@@ -386,28 +456,57 @@ function UploadProduct() {
           </Select>
         </FormControl>
         <FormControl className={classes.mb2}>
-          <TextField
-            id="outlined-multiline-static"
-            label="Colors"
-            multiline
-            name="colors"
-            value={product.colors}
-            onChange={handleChange}
-            rows={4}
-            variant="outlined"
-          />
+          <FormLabel component="legend">Colors</FormLabel>
+
+          <CreatableSelect isClearable onChange={handleColorChange} />
+          <div className={classes.colorsContainer}>
+            {colors.map((color) => (
+              <Chip
+                key={color}
+                onDelete={() => handleDeleteColor(color)}
+                label={color}
+                className={classes.chip}
+              />
+            ))}
+          </div>
+
           <FormHelperText id="my-helper-text">
             In which colours do the product come? Are there multiple colours?
           </FormHelperText>
         </FormControl>
+
         <FormControl className={classes.mb2}>
-          <InputLabel htmlFor="my-input">sizes/ various dimensions</InputLabel>
+          <FormLabel component="legend">size / various dimensions</FormLabel>
           <Input
             id="my-input"
-            name="dimensions"
-            value={product.dimensions}
+            name="dimensionsLength"
+            type="number"
+            value={product.dimensionsLength}
             onChange={handleChange}
             aria-describedby="my-helper-text"
+            placeholder="Length"
+          />
+        </FormControl>
+        <FormControl className={classes.mb2}>
+          <Input
+            id="my-input"
+            name="dimensionsWidth"
+            type="number"
+            value={product.dimensionsWidth}
+            onChange={handleChange}
+            aria-describedby="my-helper-text"
+            placeholder="Width"
+          />
+        </FormControl>
+        <FormControl className={classes.mb2}>
+          <Input
+            id="my-input"
+            name="dimensionsHeight"
+            type="number"
+            value={product.dimensionsHeight}
+            onChange={handleChange}
+            aria-describedby="my-helper-text"
+            placeholder="Height"
           />
         </FormControl>
         <FormControl className={classes.mb2}>
@@ -447,6 +546,7 @@ function UploadProduct() {
           <Input
             id="my-input"
             name="retail_price"
+            type="number"
             value={product.retail_price}
             onChange={handleChange}
             aria-describedby="my-helper-text"
@@ -460,6 +560,7 @@ function UploadProduct() {
           <Input
             id="my-input"
             name="sale_price"
+            type="number"
             required
             value={product.sale_price}
             onChange={handleChange}
@@ -476,6 +577,7 @@ function UploadProduct() {
           <Input
             id="my-input"
             name="wholesale_quantity"
+            type="number"
             required
             value={product.wholesale_quantity}
             onChange={handleChange}
@@ -490,6 +592,7 @@ function UploadProduct() {
           <InputLabel htmlFor="my-input">Wholesale Price </InputLabel>
           <Input
             id="my-input"
+            type="number"
             name="wholesale_price"
             value={product.wholesale_price}
             onChange={handleChange}
@@ -520,6 +623,7 @@ function UploadProduct() {
           <Input
             id="my-input"
             name="standard_usd"
+            type="number"
             value={product.standard_usd}
             onChange={handleChange}
             aria-describedby="my-helper-text"
@@ -537,6 +641,7 @@ function UploadProduct() {
           <Input
             id="my-input"
             name="standard_euro"
+            type="number"
             value={product.standard_euro}
             onChange={handleChange}
             aria-describedby="my-helper-text"
@@ -588,6 +693,7 @@ function UploadProduct() {
           <InputLabel htmlFor="my-input">volumetric weight (kg)</InputLabel>
           <Input
             id="my-input"
+            type="number"
             name="volumetric_weight"
             value={product.volumetric_weight}
             onChange={handleChange}
@@ -595,15 +701,22 @@ function UploadProduct() {
           />
         </FormControl>
         <FormControl className={classes.mb2}>
-          <InputLabel htmlFor="my-input">Up sells *</InputLabel>
-          <Input
-            id="my-input"
-            value={product.upsells}
-            name="upsells"
-            required
-            onChange={handleChange}
-            aria-describedby="my-helper-text"
+          <FormLabel component="legend">Upsells *</FormLabel>
+          <CreatableSelect
+            isClearable
+            onChange={handleUpSellsChange}
+            options={sellsOption}
           />
+          <div className={classes.colorsContainer}>
+            {upSells.map((upSell) => (
+              <Chip
+                key={upSell}
+                onDelete={() => handleDeleteUpsells(upSell)}
+                label={products.find((product) => product.id === upSell).name}
+                className={classes.chip}
+              />
+            ))}
+          </div>
           <FormHelperText id="my-helper-text">
             Are there more expensive products that are similar or in the same
             subcategory as this one that customers may like? List their names
@@ -611,15 +724,24 @@ function UploadProduct() {
           </FormHelperText>
         </FormControl>
         <FormControl className={classes.mb2}>
-          <InputLabel htmlFor="my-input">Cross sells *</InputLabel>
-          <Input
-            id="my-input"
-            value={product.crosssells}
-            name="crosssells"
-            required
-            onChange={handleChange}
-            aria-describedby="my-helper-text"
+          <FormLabel component="legend">CrossSells *</FormLabel>
+          <CreatableSelect
+            isClearable
+            onChange={handleCrossSellsChange}
+            options={sellsOption}
           />
+          <div className={classes.colorsContainer}>
+            {crossSells.map((crossSell) => (
+              <Chip
+                key={crossSell}
+                onDelete={() => handleDeleteCrossSells(crossSell)}
+                label={
+                  products.find((product) => product.id === crossSell).name
+                }
+                className={classes.chip}
+              />
+            ))}
+          </div>
           <FormHelperText id="my-helper-text">
             Are there any products that go well with this product e.g. can be
             used together or complete a look, living room, setee. Please list
