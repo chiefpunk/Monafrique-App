@@ -616,42 +616,48 @@ function UploadProduct() {
             <MenuItem value="no">No</MenuItem>
           </Select>
         </FormControl>
-        <FormControl className={classes.mb2}>
-          <InputLabel htmlFor="my-input">
-            Standard USD currency price
-          </InputLabel>
-          <Input
-            id="my-input"
-            name="standard_usd"
-            type="number"
-            value={product.standard_usd}
-            onChange={handleChange}
-            aria-describedby="my-helper-text"
-          />
-          <FormHelperText id="my-helper-text">
-            Leave this field blank if we can convert the price of your product
-            based on prevailing interest rates. However if you have different
-            prices for different markets please list it here.
-          </FormHelperText>
-        </FormControl>
-        <FormControl className={classes.mb2}>
-          <InputLabel htmlFor="my-input">
-            Standard Euro currency price
-          </InputLabel>
-          <Input
-            id="my-input"
-            name="standard_euro"
-            type="number"
-            value={product.standard_euro}
-            onChange={handleChange}
-            aria-describedby="my-helper-text"
-          />
-          <FormHelperText id="my-helper-text">
-            Leave this field blank if we can convert the price of your product
-            based on prevailing interest rates. However if you have different
-            prices for different markets please list it here.
-          </FormHelperText>
-        </FormControl>
+        {product.ppp === 'yes' ? (
+          <>
+            <FormControl className={classes.mb2}>
+              <InputLabel htmlFor="my-input">
+                Standard USD currency price
+              </InputLabel>
+              <Input
+                id="my-input"
+                name="standard_usd"
+                type="number"
+                value={product.standard_usd}
+                onChange={handleChange}
+                aria-describedby="my-helper-text"
+              />
+              <FormHelperText id="my-helper-text">
+                Leave this field blank if we can convert the price of your
+                product based on prevailing interest rates. However if you have
+                different prices for different markets please list it here.
+              </FormHelperText>
+            </FormControl>
+            <FormControl className={classes.mb2}>
+              <InputLabel htmlFor="my-input">
+                Standard Euro currency price
+              </InputLabel>
+              <Input
+                id="my-input"
+                name="standard_euro"
+                type="number"
+                value={product.standard_euro}
+                onChange={handleChange}
+                aria-describedby="my-helper-text"
+              />
+              <FormHelperText id="my-helper-text">
+                Leave this field blank if we can convert the price of your
+                product based on prevailing interest rates. However if you have
+                different prices for different markets please list it here.
+              </FormHelperText>
+            </FormControl>
+          </>
+        ) : (
+          ''
+        )}
         <FormControl component="fieldset" className={classes.mb2}>
           <FormLabel component="legend">Weight *</FormLabel>
           <RadioGroup
