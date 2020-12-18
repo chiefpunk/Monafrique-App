@@ -3,9 +3,10 @@ import { LOGIN_SUCCESS, LOGIN_FAIL, LOGOUT } from '../constants/types'
 
 const user = JSON.parse(localStorage.getItem('user'))
 
-const initialState = user
-  ? { isLoggedIn: true, user }
-  : { isLoggedIn: false, user: null }
+const initialState =
+  user && user.token
+    ? { isLoggedIn: true, user }
+    : { isLoggedIn: false, user: null }
 const auth = handleActions(
   {
     [LOGIN_SUCCESS]: (state, action) => ({

@@ -656,7 +656,7 @@ function UploadProduct() {
             </FormControl>
           </>
         ) : (
-          ''
+          <></>
         )}
         <FormControl component="fieldset" className={classes.mb2}>
           <FormLabel component="legend">Weight *</FormLabel>
@@ -723,10 +723,11 @@ function UploadProduct() {
               />
             ))}
           </div>
+          <FormHelperText id="my-helper-text" />
           <FormHelperText id="my-helper-text">
             Are there more expensive products that are similar or in the same
             subcategory as this one that customers may like? List their names
-            below (list up to 4 products only
+            below (list up to 4 products only)
           </FormHelperText>
         </FormControl>
         <FormControl className={classes.mb2}>
@@ -792,6 +793,9 @@ function UploadProduct() {
               disabled={isUploading}
             >
               Save
+            </Button>
+            <Button>
+              <li>This is really what I did n</li>
             </Button>
             {isUploading && (
               <CircularProgress size={24} className={classes.buttonProgress} />
