@@ -12,11 +12,13 @@ import {
   Grid,
   CircularProgress,
   makeStyles,
+  Snackbar,
 } from '@material-ui/core'
 
 import { useForm } from '../../hooks/useForm'
 import { login } from '../../actions/auth'
 import Slider from '../../components/Slider'
+import Alert from '../../components/Alert'
 import 'react-awesome-slider/dist/styles.css'
 import logo from '../../assets/images/logo.png'
 
@@ -64,24 +66,43 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-function Login(props) {
+function Login() {
   const classes = useStyles()
   const [values, handleChange] = useForm({ username: '', password: '' })
   const [loading, setLoading] = useState(false)
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [message, setMessage] = useState({ content: '', type: 'success' })
+
   const dispatch = useDispatch()
   const handleSubmit = (e) => {
     e.preventDefault()
     setLoading(true)
     dispatch(login(values.username, values.password))
       .then(() => {
+        setAlertOpen(true)
+        setMessage({ content: 'Login Success', type: 'success' })
         setLoading(false)
       })
       .catch((err) => {
+        setAlertOpen(true)
+        setMessage({ content: err, type: 'error' })
         setLoading(false)
       })
   }
+  const alertClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return
+    }
+    setAlertOpen(false)
+  }
+
   return (
     <Grid container component="main" className={classes.root}>
+      <Snackbar open={alertOpen} autoHideDuration={6000} onClose={alertClose}>
+        <Alert onClose={alertClose} severity={message.type}>
+          {message.content}
+        </Alert>
+      </Snackbar>
       <CssBaseline />
       <Grid item xs={false} sm={4} md={7} className={classes.slider}>
         <Slider />
@@ -130,7 +151,6 @@ function Login(props) {
                 color="primary"
                 className={classes.submit}
                 disabled={loading}
-                // endIcon={loading?<CircularProgress color="secondary" size="medium" />:""}
               >
                 Sign In
               </Button>

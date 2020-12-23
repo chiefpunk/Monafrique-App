@@ -8,15 +8,28 @@ import * as AuthService from '../services/auth.service'
 
 export const login = (username, password) => (dispatch) => {
   return AuthService.login(username, password).then(
-    (data) => {
-      dispatch({
-        type: LOGIN_SUCCESS,
-        payload: { data },
-      })
-      console.log(data)
+    (res) => {
+      if (res.success === true) {
+        dispatch({
+          type: LOGIN_SUCCESS,
+          payload: { data: res.data },
+        })
+      } else {
+        dispatch({
+          type: LOGIN_FAIL,
+        })
+        // console.log(res.message)
+        // dispatch({
+        //   type: SET_MESSAGE,
+        //   payload: res.message,
+        // })
+        throw res.message
+      }
+
       return Promise.resolve()
     },
     (error) => {
+      console.log(error)
       const message =
         (error.response &&
           error.response.data &&

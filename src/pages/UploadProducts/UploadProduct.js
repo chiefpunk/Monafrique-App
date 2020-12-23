@@ -18,19 +18,21 @@ import {
   Button,
   CircularProgress,
   Snackbar,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Typography,
 } from '@material-ui/core'
-import MuiAlert from '@material-ui/lab/Alert'
-import { makeStyles, useTheme } from '@material-ui/core/styles'
+
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import CreatableSelect from 'react-select/creatable'
+import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { DropzoneArea } from 'material-ui-dropzone'
 import { postProduct } from '../../actions/products'
-import authHeader from '../../services/auth-header'
-import { POST_IMAGE_API_URL } from '../../constants/api'
+import Alert from '../../components/Alert'
+import { uploadImage } from '../../services/products.service'
 
 const local_currencies = ['usd', 'euro', 'naira', 'gbp']
-function Alert(props) {
-  return <MuiAlert elevation={6} variant="filled" {...props} />
-}
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -55,6 +57,9 @@ const useStyles = makeStyles((theme) => ({
   },
   mb2: {
     marginBottom: 30,
+  },
+  mb1: {
+    marginBottom: 15,
   },
   formControl: {
     margin: theme.spacing(1),
@@ -87,6 +92,13 @@ const useStyles = makeStyles((theme) => ({
     textAlign: 'left',
     marginTop: 10,
   },
+  heading: {
+    fontSize: theme.typography.pxToRem(15),
+    fontWeight: theme.typography.fontWeightRegular,
+  },
+  accordion_details: {
+    flexDirection: 'column',
+  },
 }))
 
 const ITEM_HEIGHT = 48
@@ -113,23 +125,30 @@ function UploadProduct() {
   const theme = useTheme()
   const products = useSelector((state) => state.products.products)
   const categories = useSelector((state) => state.products.categories)
+  const [volumetric_weight, setVolumeticWeight] = useState('')
+  const [colors, setColors] = useState([])
+  const [upSells, setUpSells] = useState([])
+  const [crossSells, setCrossSells] = useState([])
+  const [mainProductImage, setMainProductImage] = React.useState([])
+  const [imageWithDescription, setImagewithDescription] = React.useState([])
+  const [fullScreenImage, setFullScreenImage] = React.useState([])
+  const [knowBeforeImage, setKnowBeforeImage] = React.useState([])
+  const [productGalleries, setProductGalleries] = React.useState([])
+  const [isUploading, setIsUploading] = React.useState(false)
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [message, setMessage] = useState({ content: '', type: '' })
   const [sellsOption, setSellsOption] = useState([])
-  useEffect(() => {
-    let sellsOptions = products.map((product) => ({
-      value: product.id,
-      label: product.name,
-    }))
-    setSellsOption(sellsOptions)
-  }, [products])
+  const [informations, setInformations] = useState([])
 
-  console.log(sellsOption)
-  // categories = categories.map((category) => category.name)
   const [product, handleChange] = useForm({
     brand_name: '',
     brand_ethos: '',
     product_name: '',
     product_description: '',
+    imageWithDescriptionTitle: '',
+    imageWithDescription: '',
     know_before_you_buy: '',
+    know_before_you_buy_title: '',
     sku: '',
     quantity: '',
     selectedCategoriesId: [],
@@ -145,20 +164,31 @@ function UploadProduct() {
     standard_usd: '',
     standard_euro: '',
     weight: '',
-    volumetric_weight: '',
     photo_drive_link: '',
   })
-  const [colors, setColors] = useState([])
-  const [upSells, setUpSells] = useState([])
-  const [crossSells, setCrossSells] = useState([])
 
-  const [mainProductImage, setMainProductImage] = React.useState([])
-  const [imageWithDescription, setImagewithDescription] = React.useState([])
-  const [fullScreenImage, setFullScreenImage] = React.useState([])
-  const [knowBeforeImage, setKnowBeforeImage] = React.useState([])
-  const [productGalleries, setProductGalleries] = React.useState([])
-  const [isUploading, setIsUploading] = React.useState(false)
-  const [alertOpen, setAlertOpen] = useState(false)
+  useEffect(() => {
+    let sellsOptions = products.map((product) => ({
+      value: product.id,
+      label: product.name,
+    }))
+    setSellsOption(sellsOptions)
+  }, [products])
+
+  //set Volumetric Weight
+  useEffect(() => {
+    let volumetricWeight =
+      (parseFloat(product.dimensionsHeight) *
+        parseFloat(product.dimensionsLength) *
+        parseFloat(product.dimensionsWidth)) /
+      5000
+    console.log(volumetricWeight)
+    setVolumeticWeight(volumetricWeight.toString() + 'Kg')
+  }, [
+    product.dimensionsHeight,
+    product.dimensionsLength,
+    product.dimensionsWidth,
+  ])
 
   const handleColorChange = (newValue, actionMeta) => {
     console.log(newValue)
@@ -182,77 +212,191 @@ function UploadProduct() {
     setCrossSells(crossSells.filter((crossSell) => crossSell !== val))
   }
 
+  const removeInformation = (i) => {
+    console.log(i)
+    let know_informations = [...informations]
+    know_informations.splice(i, 1)
+    setInformations(know_informations)
+  }
+
+  const handleInformation = (i, e) => {
+    let know_informations = [...informations]
+    know_informations[i] = {
+      ...know_informations[i],
+      [e.target.name]: e.target.value,
+    }
+    setInformations(know_informations)
+  }
+
+  const addNewInformation = () => {
+    setInformations((prevState) => [...prevState, { title: '', text: '' }])
+  }
   const alertClose = (event, reason) => {
     if (reason === 'clickaway') {
       return
     }
     setAlertOpen(false)
   }
-  console.log(mainProductImage[0])
-  console.log(imageWithDescription[0])
-  console.log(fullScreenImage[0])
-  console.log(knowBeforeImage[0])
-  console.log(productGalleries[0])
 
-  const uploadProduct = (e) => {
+  const uploadProduct = async (e) => {
     e.preventDefault()
     setIsUploading(true)
-    const formData = new FormData()
-    formData.append('file', mainProductImage[0])
-    formData.append('title', product.product_name)
-    fetch(POST_IMAGE_API_URL, {
-      method: 'POST',
-      headers: authHeader(),
-      body: formData,
+
+    let galleryImages = []
+    let mainProductImageLink = await uploadImage(
+      mainProductImage[0],
+      product.product_name.replaceAll(' ', '_') + '_main_product_image',
+      800,
+      864,
+    )
+
+    let knowBeforeImageLink = await uploadImage(
+      knowBeforeImage[0],
+      product.product_name.replaceAll(' ', '_') + '_know_before_image',
+      974,
+      1250,
+    )
+
+    let fullscreenImageLink = await uploadImage(
+      fullScreenImage[0],
+      product.product_name.replaceAll(' ', '_') + '_full_screen_image',
+      1062,
+      650,
+    )
+
+    let imageWithDescriptionLink = await uploadImage(
+      imageWithDescription[0],
+      product.product_name.replaceAll(' ', '_') + '_image_with_description',
+      974,
+      1250,
+    )
+
+    for (let id in productGalleries) {
+      const gallery = productGalleries[id]
+      const response = await uploadImage(
+        gallery,
+        product.product_name.replaceAll(' ', '_') + '_product_gallery',
+        800,
+        864,
+      )
+      galleryImages.push({ src: response.source_url })
+    }
+
+    let productImages = []
+
+    productImages.push({ src: mainProductImageLink.source_url })
+    productImages = productImages.concat(galleryImages)
+    let extra_meta_data = []
+    for (let index in informations) {
+      extra_meta_data.push({
+        key: `sections_2_information_${index}_title`,
+        value: informations[index].title,
+      })
+      extra_meta_data.push({
+        key: `_sections_2_information_${index}_title`,
+        value: 'field_5bc7579702575',
+      })
+      extra_meta_data.push({
+        key: `sections_2_information_${index}_text`,
+        value: informations[index].text,
+      })
+      extra_meta_data.push({
+        key: `_sections_2_information_${index}_text`,
+        value: 'field_5bc757bf02576',
+      })
+    }
+    extra_meta_data.push({
+      key: 'sections_2_information',
+      value: informations.length,
     })
-      .then((res) => res.json())
+    extra_meta_data.push({
+      key: '_sections_2_information',
+      value: 'field_5bc7571202574',
+    })
+
+    dispatch(
+      postProduct({
+        name: product.product_name,
+        description: product.product_description,
+        short_description: product.brand_ethos,
+        images: productImages,
+        sku: product.sku,
+        regular_price: product.retail_price,
+        sale_price: product.sale_price,
+        stock_quantity: parseInt(product.quantity),
+        weight: product.weight,
+        categories: product.selectedCategoriesId.map((id) => ({
+          id: id,
+        })),
+        attributes: [{ name: 'Color', options: colors }],
+        dimensions: {
+          height: product.dimensionsHeight,
+          length: product.dimensionsLength,
+          width: product.dimensionsWidth,
+        },
+        cross_sell_ids: crossSells,
+        upsell_ids: upSells,
+        meta_data: [
+          { key: '_usd_price', value: product.standard_usd },
+          { key: '_europe_price', value: product.standard_euro },
+          {
+            key: 'sections',
+            value: [
+              'heading_with_description_and_image',
+              'full_screen_image',
+              'know_before_you_buy',
+            ],
+          },
+          { key: '_sections', value: 'field_5bc72c4577560' },
+          { key: '_sections_0_image', value: 'field_5bc98bc50c627' },
+          {
+            key: 'sections_0_image',
+            value: parseInt(imageWithDescriptionLink.id),
+          },
+          {
+            key: 'sections_0_title',
+            value: product.imageWithDescriptionTitle,
+          },
+          { key: '_sections_0_title', value: 'field_5bc98bc50c628' },
+          {
+            key: 'sections_0_description',
+            value: product.imageWithDescription,
+          },
+          { key: '_sections_1_image', value: 'field_5bc72c8477561' },
+          {
+            key: 'sections_1_image',
+            value: parseInt(fullscreenImageLink.id),
+          },
+          { key: '_sections_2_image', value: 'field_5bc7569302572' },
+          {
+            key: 'sections_2_image',
+            value: parseInt(knowBeforeImageLink.id),
+          },
+          {
+            key: 'sections_2_title',
+            value: product.know_before_you_buy_title,
+          },
+          { key: '_sections_2_title', value: 'field_5bc7570802573' },
+        ].concat(extra_meta_data || []),
+      }),
+    )
       .then((data) => {
-        dispatch(
-          postProduct({
-            acf: {
-              sections: [
-                {
-                  title: product.know_before_you_buy,
-                },
-              ],
-            },
-            name: product.product_name,
-            description: product.product_description,
-            short_description: product.brand_ethos,
-            images: [{ src: data.source_url }],
-            sku: product.sku,
-            regular_price: product.retail_price,
-            sale_price: product.sale_price,
-            stock_quantity: parseInt(product.quantity),
-            weight: product.weight,
-            categories: product.selectedCategoriesId.map((id) => ({
-              id: id,
-            })),
-            attributes: [{ name: 'Color', options: colors }],
-            dimensions: {
-              height: product.dimensionsHeight,
-              length: product.dimensionsLength,
-              width: product.dimensionsWidth,
-            },
-            cross_sell_ids: crossSells,
-            upsell_ids: upSells,
-          }),
-        )
-          .then((data) => {
-            setAlertOpen(true)
-            setIsUploading(false)
-          })
-          .catch((err) => console.log(err))
+        setMessage({ content: 'Product upload success', type: 'success' })
+        setAlertOpen(true)
+        setIsUploading(false)
       })
       .catch((err) => {
-        console.log(err)
+        console.log('err', err)
+        setMessage({ content: err.message, type: 'error' })
+        setAlertOpen(true)
+        setIsUploading(false)
       })
   }
   return (
     <div className={classes.root}>
       <Snackbar open={alertOpen} autoHideDuration={6000} onClose={alertClose}>
-        <Alert onClose={alertClose} severity="success">
-          Product uploaded successfully
+        <Alert onClose={alertClose} severity={message.type}>
+          {message.content}
         </Alert>
       </Snackbar>
       <h1>Upload product</h1>
@@ -333,67 +477,188 @@ function UploadProduct() {
             do? What can you wear it with?
           </FormHelperText>
         </FormControl>
-        <Box className={classes.mb2}>
-          <DropzoneArea
-            filesLimit={1}
-            acceptedFiles={['image/*']}
-            dropzoneText={'Image with description *'}
-            onChange={(files) => setImagewithDescription(files)}
-          />
-          <FormHelperText id="my-helper-text">
-            This product image comes with another caption for you to provide
-            more details on your product , especially if it's one of a kind.
-            This is especially great for artworks to provide more background
-            detail
-          </FormHelperText>
-        </Box>
-        <Box className={classes.mb2}>
-          <DropzoneArea
-            filesLimit={1}
-            acceptedFiles={['image/*']}
-            dropzoneText={'Full Screen Image *'}
-            onChange={(files) => setFullScreenImage(files)}
-          />
-          <FormHelperText id="my-helper-text">
-            Attach a second product image (landscape size) mage Width: 1062px by
-            Height: 573px)
-          </FormHelperText>
-        </Box>
-        <Box className={classes.mb2}>
-          <DropzoneArea
-            filesLimit={1}
-            acceptedFiles={['image/*']}
-            dropzoneText={'Know Before You Buy Image *'}
-            onChange={(files) => setKnowBeforeImage(files)}
-          />
-          <FormHelperText id="my-helper-text">
-            This section comes with descriptive subheadings headings to let
-            customers know about nitty gritty details such as if the size runs
-            big, if the product is for oily skin only, if the product is so
-            unique it would take 14 days to make. Attach 1 more product image
-            and input the important text in the next section.
-          </FormHelperText>
-        </Box>
-        <FormControl className={classes.mb2}>
-          <TextField
-            id="outlined-multiline-static"
-            label="Know Before you buy"
-            multiline
-            name="know_before_you_buy"
-            value={product.know_before_you_buy}
-            onChange={handleChange}
-            rows={4}
-            required
-            variant="outlined"
-          />
-          <FormHelperText id="my-helper-text">
-            For example is it custom orders only? Write Custom orders: Specify
-            how long it would take to make and ship. Put yourself in the shoes
-            of the buyer what information you have liked to know, or would have
-            been helpful to know before purchasing this product. Adding such
-            information would minimise the likelihood of returns
-          </FormHelperText>
-        </FormControl>
+        <Accordion>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel1a-content"
+            id="panel1a-header"
+          >
+            <Typography className={classes.heading}>
+              Image with Description
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails className={classes.accordion_details}>
+            <Box className={classes.mb2}>
+              <DropzoneArea
+                filesLimit={1}
+                acceptedFiles={['image/*']}
+                dropzoneText={'Image with description *'}
+                onChange={(files) => setImagewithDescription(files)}
+              />
+              <FormHelperText id="my-helper-text">
+                This product image comes with another caption for you to provide
+                more details on your product , especially if it's one of a kind.
+                This is especially great for artworks to provide more background
+                detail
+              </FormHelperText>
+            </Box>
+            <FormControl className={classes.mb2}>
+              <InputLabel htmlFor="my-input">Title *</InputLabel>
+              <Input
+                id="my-input"
+                name="imageWithDescriptionTitle"
+                value={product.imageWithDescriptionTitle}
+                onChange={handleChange}
+                required
+                aria-describedby="my-helper-text"
+              />
+            </FormControl>
+            <FormControl className={classes.mb2}>
+              <TextField
+                id="outlined-multiline-static"
+                label="Content"
+                multiline
+                name="imageWithDescription"
+                value={product.imageWithDescription}
+                onChange={handleChange}
+                rows={4}
+                required
+                variant="outlined"
+              />
+            </FormControl>
+          </AccordionDetails>
+        </Accordion>
+        <Accordion>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel1a-content"
+            id="panel1a-header"
+          >
+            <Typography className={classes.heading}>
+              Full Screen Image
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails className={classes.accordion_details}>
+            <Box className={classes.mb2}>
+              <DropzoneArea
+                filesLimit={1}
+                acceptedFiles={['image/*']}
+                dropzoneText={'Full Screen Image *'}
+                onChange={(files) => setFullScreenImage(files)}
+              />
+              <FormHelperText id="my-helper-text">
+                Attach a second product image (landscape size) mage Width:
+                1062px by Height: 573px)
+              </FormHelperText>
+            </Box>
+          </AccordionDetails>
+        </Accordion>
+        <Accordion className={classes.mb2}>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel1a-content"
+            id="panel1a-header"
+          >
+            <Typography className={classes.heading}>
+              Know Before You Buy
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails className={classes.accordion_details}>
+            <Box className={classes.mb2}>
+              <DropzoneArea
+                filesLimit={1}
+                acceptedFiles={['image/*']}
+                dropzoneText={'Know Before You Buy Image *'}
+                onChange={(files) => setKnowBeforeImage(files)}
+              />
+              <FormHelperText id="my-helper-text">
+                This section comes with descriptive subheadings headings to let
+                customers know about nitty gritty details such as if the size
+                runs big, if the product is for oily skin only, if the product
+                is so unique it would take 14 days to make. Attach 1 more
+                product image and input the important text in the next section.
+              </FormHelperText>
+            </Box>
+            <FormControl className={classes.mb2}>
+              <InputLabel htmlFor="my-input">Title *</InputLabel>
+              <Input
+                id="my-input"
+                name="know_before_you_buy_title"
+                value={product.know_before_you_buy_title}
+                onChange={handleChange}
+                required
+                aria-describedby="my-helper-text"
+              />
+            </FormControl>
+            <FormLabel component="legend" className={classes.mb1}>
+              Information
+            </FormLabel>
+            <Button
+              variant="contained"
+              color="primary"
+              className={classes.mb1}
+              onClick={addNewInformation}
+            >
+              Add Row
+            </Button>
+            {informations.map((el, i) => (
+              <FormControl key={i} className={classes.mb2}>
+                <Input
+                  id="my-input"
+                  name="title"
+                  value={el.title || ''}
+                  onChange={(e) => handleInformation(i, e)}
+                  placeholder="Title"
+                  required
+                  aria-describedby="my-helper-text"
+                  className={classes.mb1}
+                />
+                <TextField
+                  id="outlined-multiline-static"
+                  multiline
+                  name="text"
+                  value={el.text || ''}
+                  onChange={(e) => handleInformation(i, e)}
+                  rows={4}
+                  required
+                  variant="outlined"
+                  className={classes.mb1}
+                  placeholder="Text"
+                />
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={() => removeInformation(i)}
+                >
+                  Remove
+                </Button>
+              </FormControl>
+            ))}
+
+            {/* <FormControl className={classes.mb2}>
+              <TextField
+                id="outlined-multiline-static"
+                label="Know Before you buy"
+                multiline
+                name="know_before_you_buy"
+                value={product.know_before_you_buy}
+                onChange={handleChange}
+                rows={4}
+                required
+                variant="outlined"
+              />
+              <FormHelperText id="my-helper-text">
+                For example is it custom orders only? Write Custom orders:
+                Specify how long it would take to make and ship. Put yourself in
+                the shoes of the buyer what information you have liked to know,
+                or would have been helpful to know before purchasing this
+                product. Adding such information would minimise the likelihood
+                of returns
+              </FormHelperText>
+            </FormControl> */}
+          </AccordionDetails>
+        </Accordion>
+
         <FormControl className={classes.mb2}>
           <InputLabel htmlFor="my-input">SKU</InputLabel>
           <Input
@@ -487,6 +752,7 @@ function UploadProduct() {
             placeholder="Length"
           />
         </FormControl>
+
         <FormControl className={classes.mb2}>
           <Input
             id="my-input"
@@ -498,6 +764,7 @@ function UploadProduct() {
             placeholder="Width"
           />
         </FormControl>
+
         <FormControl className={classes.mb2}>
           <Input
             id="my-input"
@@ -509,6 +776,7 @@ function UploadProduct() {
             placeholder="Height"
           />
         </FormControl>
+
         <FormControl className={classes.mb2}>
           <InputLabel htmlFor="my-input">Local currency</InputLabel>
           <Select
@@ -539,6 +807,7 @@ function UploadProduct() {
             ))}
           </Select>
         </FormControl>
+
         <FormControl className={classes.mb2}>
           <InputLabel htmlFor="my-input">
             Standard Retail Price in your local currency *
@@ -555,6 +824,7 @@ function UploadProduct() {
             How much does this item go for?
           </FormHelperText>
         </FormControl>
+
         <FormControl className={classes.mb2}>
           <InputLabel htmlFor="my-input">Sale Price *</InputLabel>
           <Input
@@ -572,6 +842,7 @@ function UploadProduct() {
             can take off an item. For example, the maximum discount can be 20%.
           </FormHelperText>
         </FormControl>
+
         <FormControl className={classes.mb2}>
           <InputLabel htmlFor="my-input">Wholesale quantity *</InputLabel>
           <Input
@@ -588,6 +859,7 @@ function UploadProduct() {
             wholesale price?
           </FormHelperText>
         </FormControl>
+
         <FormControl className={classes.mb2}>
           <InputLabel htmlFor="my-input">Wholesale Price </InputLabel>
           <Input
@@ -603,6 +875,7 @@ function UploadProduct() {
             buying in bulk e.g. 50% off
           </FormHelperText>
         </FormControl>
+
         <FormControl className={classes.mb2}>
           <InputLabel id="demo-simple-select-label">PPP adjusted? </InputLabel>
           <Select
@@ -616,6 +889,7 @@ function UploadProduct() {
             <MenuItem value="no">No</MenuItem>
           </Select>
         </FormControl>
+
         {product.ppp === 'yes' ? (
           <>
             <FormControl className={classes.mb2}>
@@ -658,6 +932,7 @@ function UploadProduct() {
         ) : (
           <></>
         )}
+
         <FormControl component="fieldset" className={classes.mb2}>
           <FormLabel component="legend">Weight *</FormLabel>
           <RadioGroup
@@ -669,43 +944,45 @@ function UploadProduct() {
           >
             <FormControlLabel value="2.5" control={<Radio />} label="<2.5kg" />
             <FormControlLabel
-              value="2.5-3kg"
+              value="2.5-3"
               control={<Radio />}
               label="2.5-3kg"
             />
             <FormControlLabel
-              value="3.1-5kg"
+              value="3.1-5"
               control={<Radio />}
               label="3.1-5kg"
             />
             <FormControlLabel
-              value="5.1-8kg"
+              value="5.1-8"
               control={<Radio />}
               label="5.1-8kg"
             />
             <FormControlLabel
-              value="8.1-10kg"
+              value="8.1-10"
               control={<Radio />}
               label="8.1-10kg"
             />
             <FormControlLabel
-              value="over 10kg"
+              value="10"
               control={<Radio />}
               label="over 10kg"
             />
           </RadioGroup>
         </FormControl>
+
         <FormControl className={classes.mb2}>
-          <InputLabel htmlFor="my-input">volumetric weight (kg)</InputLabel>
+          <FormLabel component="legend">Volumetric Weight</FormLabel>
           <Input
             id="my-input"
-            type="number"
             name="volumetric_weight"
-            value={product.volumetric_weight}
-            onChange={handleChange}
+            value={volumetric_weight}
+            readOnly
+            placeholder="Volumetric Weight"
             aria-describedby="my-helper-text"
           />
         </FormControl>
+
         <FormControl className={classes.mb2}>
           <FormLabel component="legend">Upsells *</FormLabel>
           <CreatableSelect
@@ -730,6 +1007,7 @@ function UploadProduct() {
             below (list up to 4 products only)
           </FormHelperText>
         </FormControl>
+
         <FormControl className={classes.mb2}>
           <FormLabel component="legend">CrossSells *</FormLabel>
           <CreatableSelect
@@ -755,6 +1033,7 @@ function UploadProduct() {
             them here
           </FormHelperText>
         </FormControl>
+
         <Box className={classes.mb2}>
           <DropzoneArea
             filesLimit={3}
@@ -767,6 +1046,7 @@ function UploadProduct() {
             Height: 573px)
           </FormHelperText>
         </Box>
+
         <FormControl className={classes.mb2}>
           <InputLabel htmlFor="my-input">Photo Drive Link</InputLabel>
           <Input
@@ -781,6 +1061,7 @@ function UploadProduct() {
             the url link here
           </FormHelperText>
         </FormControl>
+
         <Box className={classes.footer}>
           <Button variant="contained" color="primary">
             Cancel
@@ -794,9 +1075,7 @@ function UploadProduct() {
             >
               Save
             </Button>
-            <Button>
-              <li>This is really what I did n</li>
-            </Button>
+
             {isUploading && (
               <CircularProgress size={24} className={classes.buttonProgress} />
             )}

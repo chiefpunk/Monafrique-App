@@ -39,7 +39,7 @@ const products = handleActions(
     }),
     [POST_PRODUCT_SUCCESS]: (state, action) => ({
       ...state,
-      products: state.products.concat(action.payload.data),
+      products: state.products.reverse().concat(action.payload.data).reverse(),
       new_product: action.payload.data,
     }),
     [POST_PRODUCT_FAIL]: (state, action) => ({ ...state, new_product: null }),
