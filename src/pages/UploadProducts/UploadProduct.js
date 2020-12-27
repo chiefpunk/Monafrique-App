@@ -733,6 +733,7 @@ function UploadProduct() {
                   </MenuItem>
                 )
               }
+              return false
             })}
           </Select>
         </FormControl>
