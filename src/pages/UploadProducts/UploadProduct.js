@@ -725,11 +725,15 @@ function UploadProduct() {
             )}
             MenuProps={MenuProps}
           >
-            {categories.map((category) => (
-              <MenuItem key={category.id} value={category.id}>
-                {category.name}
-              </MenuItem>
-            ))}
+            {categories.map((category) => {
+              if (category.parent !== 0) {
+                return (
+                  <MenuItem key={category.id} value={category.id}>
+                    {category.name}
+                  </MenuItem>
+                )
+              }
+            })}
           </Select>
         </FormControl>
         <FormControl className={classes.mb2}>
