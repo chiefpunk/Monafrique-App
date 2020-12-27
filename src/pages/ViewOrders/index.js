@@ -114,7 +114,11 @@ export default function ViewOrders() {
                   return (
                     <TableRow hover role="checkbox" tabIndex={-1} key={index}>
                       <TableCell align="left">
-                        <Typography variant="overline" gutterBottom>
+                        <Typography
+                          variant="overline"
+                          gutterBottom
+                          onClick={() => window.open(row.link)}
+                        >
                           {row.order}
                         </Typography>
                       </TableCell>

@@ -152,9 +152,9 @@ function UploadProduct() {
     sku: '',
     quantity: '',
     selectedCategoriesId: [],
-    dimensionsLength: '',
-    dimensionsWidth: '',
-    dimensionsHeight: '',
+    dimensionsLength: '0',
+    dimensionsWidth: '0',
+    dimensionsHeight: '0',
     selectedCurrencies: [],
     retail_price: '',
     sale_price: '',
@@ -194,9 +194,11 @@ function UploadProduct() {
     console.log(newValue)
     setColors([...colors, newValue.value])
   }
+
   const handleUpSellsChange = (newValue, actionMeta) => {
     if (upSells.length <= 3) setUpSells([...upSells, newValue.value])
   }
+
   const handleCrossSellsChange = (newValue, actionMeta) => {
     if (crossSells.length <= 3) setCrossSells([...crossSells, newValue.value])
   }
@@ -208,6 +210,7 @@ function UploadProduct() {
   const handleDeleteUpsells = (val) => {
     setUpSells(upSells.filter((upSell) => upSell !== val))
   }
+
   const handleDeleteCrossSells = (val) => {
     setCrossSells(crossSells.filter((crossSell) => crossSell !== val))
   }
@@ -231,6 +234,7 @@ function UploadProduct() {
   const addNewInformation = () => {
     setInformations((prevState) => [...prevState, { title: '', text: '' }])
   }
+
   const alertClose = (event, reason) => {
     if (reason === 'clickaway') {
       return
@@ -242,156 +246,165 @@ function UploadProduct() {
     e.preventDefault()
     setIsUploading(true)
 
-    let galleryImages = []
-    let mainProductImageLink = await uploadImage(
-      mainProductImage[0],
-      product.product_name.replaceAll(' ', '_') + '_main_product_image',
-      800,
-      864,
-    )
-
-    let knowBeforeImageLink = await uploadImage(
-      knowBeforeImage[0],
-      product.product_name.replaceAll(' ', '_') + '_know_before_image',
-      974,
-      1250,
-    )
-
-    let fullscreenImageLink = await uploadImage(
-      fullScreenImage[0],
-      product.product_name.replaceAll(' ', '_') + '_full_screen_image',
-      1062,
-      650,
-    )
-
-    let imageWithDescriptionLink = await uploadImage(
-      imageWithDescription[0],
-      product.product_name.replaceAll(' ', '_') + '_image_with_description',
-      974,
-      1250,
-    )
-
-    for (let id in productGalleries) {
-      const gallery = productGalleries[id]
-      const response = await uploadImage(
-        gallery,
-        product.product_name.replaceAll(' ', '_') + '_product_gallery',
+    try {
+      let galleryImages = []
+      let mainProductImageLink = await uploadImage(
+        mainProductImage[0],
+        product.product_name.replaceAll(' ', '_') + '_main_product_image',
         800,
         864,
       )
-      galleryImages.push({ src: response.source_url })
+
+      let knowBeforeImageLink = await uploadImage(
+        knowBeforeImage[0],
+        product.product_name.replaceAll(' ', '_') + '_know_before_image',
+        974,
+        1250,
+      )
+
+      let fullscreenImageLink = await uploadImage(
+        fullScreenImage[0],
+        product.product_name.replaceAll(' ', '_') + '_full_screen_image',
+        1062,
+        650,
+      )
+
+      let imageWithDescriptionLink = await uploadImage(
+        imageWithDescription[0],
+        product.product_name.replaceAll(' ', '_') + '_image_with_description',
+        974,
+        1250,
+      )
+
+      for (let id in productGalleries) {
+        const gallery = productGalleries[id]
+        const response = await uploadImage(
+          gallery,
+          product.product_name.replaceAll(' ', '_') + '_product_gallery',
+          800,
+          864,
+        )
+        galleryImages.push({ src: response.source_url })
+      }
+
+      let productImages = []
+
+      productImages.push({ src: mainProductImageLink.source_url })
+      productImages = productImages.concat(galleryImages)
+      let extra_meta_data = []
+
+      for (let index in informations) {
+        extra_meta_data.push({
+          key: `sections_2_information_${index}_title`,
+          value: informations[index].title,
+        })
+        extra_meta_data.push({
+          key: `_sections_2_information_${index}_title`,
+          value: 'field_5bc7579702575',
+        })
+        extra_meta_data.push({
+          key: `sections_2_information_${index}_text`,
+          value: informations[index].text,
+        })
+        extra_meta_data.push({
+          key: `_sections_2_information_${index}_text`,
+          value: 'field_5bc757bf02576',
+        })
+      }
+      extra_meta_data.push({
+        key: 'sections_2_information',
+        value: informations.length,
+      })
+      extra_meta_data.push({
+        key: '_sections_2_information',
+        value: 'field_5bc7571202574',
+      })
+
+      dispatch(
+        postProduct({
+          name: product.product_name,
+          description: product.product_description,
+          short_description: product.brand_ethos,
+          images: productImages,
+          sku: product.sku,
+          regular_price: product.retail_price,
+          sale_price: product.sale_price,
+          stock_quantity: parseInt(product.quantity),
+          weight: product.weight,
+          categories: product.selectedCategoriesId.map((id) => ({
+            id: id,
+          })),
+          attributes: [{ name: 'Color', options: colors }],
+          dimensions: {
+            height: product.dimensionsHeight,
+            length: product.dimensionsLength,
+            width: product.dimensionsWidth,
+          },
+          cross_sell_ids: crossSells,
+          upsell_ids: upSells,
+          meta_data: [
+            { key: '_usd_price', value: product.standard_usd },
+            { key: '_volumetric_weight', value: volumetric_weight },
+            { key: '_europe_price', value: product.standard_euro },
+            {
+              key: 'sections',
+              value: [
+                'heading_with_description_and_image',
+                'full_screen_image',
+                'know_before_you_buy',
+              ],
+            },
+            { key: '_sections', value: 'field_5bc72c4577560' },
+            { key: '_sections_0_image', value: 'field_5bc98bc50c627' },
+            {
+              key: 'sections_0_image',
+              value: parseInt(imageWithDescriptionLink.id),
+            },
+            {
+              key: 'sections_0_title',
+              value: product.imageWithDescriptionTitle,
+            },
+            { key: '_sections_0_title', value: 'field_5bc98bc50c628' },
+            {
+              key: 'sections_0_description',
+              value: product.imageWithDescription,
+            },
+            { key: '_sections_1_image', value: 'field_5bc72c8477561' },
+            {
+              key: 'sections_1_image',
+              value: parseInt(fullscreenImageLink.id),
+            },
+            { key: '_sections_2_image', value: 'field_5bc7569302572' },
+            {
+              key: 'sections_2_image',
+              value: parseInt(knowBeforeImageLink.id),
+            },
+            {
+              key: 'sections_2_title',
+              value: product.know_before_you_buy_title,
+            },
+            { key: '_sections_2_title', value: 'field_5bc7570802573' },
+          ].concat(extra_meta_data || []),
+        }),
+      )
+        .then((data) => {
+          setMessage({ content: 'Product upload success', type: 'success' })
+          setAlertOpen(true)
+          setIsUploading(false)
+        })
+        .catch((err) => {
+          console.log('err', err)
+          setMessage({ content: err.message, type: 'error' })
+          setAlertOpen(true)
+          setIsUploading(false)
+        })
+    } catch (err) {
+      setMessage({ content: err.message, type: 'error' })
+      setAlertOpen(true)
+      setIsUploading(false)
     }
-
-    let productImages = []
-
-    productImages.push({ src: mainProductImageLink.source_url })
-    productImages = productImages.concat(galleryImages)
-    let extra_meta_data = []
-    for (let index in informations) {
-      extra_meta_data.push({
-        key: `sections_2_information_${index}_title`,
-        value: informations[index].title,
-      })
-      extra_meta_data.push({
-        key: `_sections_2_information_${index}_title`,
-        value: 'field_5bc7579702575',
-      })
-      extra_meta_data.push({
-        key: `sections_2_information_${index}_text`,
-        value: informations[index].text,
-      })
-      extra_meta_data.push({
-        key: `_sections_2_information_${index}_text`,
-        value: 'field_5bc757bf02576',
-      })
-    }
-    extra_meta_data.push({
-      key: 'sections_2_information',
-      value: informations.length,
-    })
-    extra_meta_data.push({
-      key: '_sections_2_information',
-      value: 'field_5bc7571202574',
-    })
-
-    dispatch(
-      postProduct({
-        name: product.product_name,
-        description: product.product_description,
-        short_description: product.brand_ethos,
-        images: productImages,
-        sku: product.sku,
-        regular_price: product.retail_price,
-        sale_price: product.sale_price,
-        stock_quantity: parseInt(product.quantity),
-        weight: product.weight,
-        categories: product.selectedCategoriesId.map((id) => ({
-          id: id,
-        })),
-        attributes: [{ name: 'Color', options: colors }],
-        dimensions: {
-          height: product.dimensionsHeight,
-          length: product.dimensionsLength,
-          width: product.dimensionsWidth,
-        },
-        cross_sell_ids: crossSells,
-        upsell_ids: upSells,
-        meta_data: [
-          { key: '_usd_price', value: product.standard_usd },
-          { key: '_europe_price', value: product.standard_euro },
-          {
-            key: 'sections',
-            value: [
-              'heading_with_description_and_image',
-              'full_screen_image',
-              'know_before_you_buy',
-            ],
-          },
-          { key: '_sections', value: 'field_5bc72c4577560' },
-          { key: '_sections_0_image', value: 'field_5bc98bc50c627' },
-          {
-            key: 'sections_0_image',
-            value: parseInt(imageWithDescriptionLink.id),
-          },
-          {
-            key: 'sections_0_title',
-            value: product.imageWithDescriptionTitle,
-          },
-          { key: '_sections_0_title', value: 'field_5bc98bc50c628' },
-          {
-            key: 'sections_0_description',
-            value: product.imageWithDescription,
-          },
-          { key: '_sections_1_image', value: 'field_5bc72c8477561' },
-          {
-            key: 'sections_1_image',
-            value: parseInt(fullscreenImageLink.id),
-          },
-          { key: '_sections_2_image', value: 'field_5bc7569302572' },
-          {
-            key: 'sections_2_image',
-            value: parseInt(knowBeforeImageLink.id),
-          },
-          {
-            key: 'sections_2_title',
-            value: product.know_before_you_buy_title,
-          },
-          { key: '_sections_2_title', value: 'field_5bc7570802573' },
-        ].concat(extra_meta_data || []),
-      }),
-    )
-      .then((data) => {
-        setMessage({ content: 'Product upload success', type: 'success' })
-        setAlertOpen(true)
-        setIsUploading(false)
-      })
-      .catch((err) => {
-        console.log('err', err)
-        setMessage({ content: err.message, type: 'error' })
-        setAlertOpen(true)
-        setIsUploading(false)
-      })
   }
+
   return (
     <div className={classes.root}>
       <Snackbar open={alertOpen} autoHideDuration={6000} onClose={alertClose}>
@@ -658,7 +671,6 @@ function UploadProduct() {
             </FormControl> */}
           </AccordionDetails>
         </Accordion>
-
         <FormControl className={classes.mb2}>
           <InputLabel htmlFor="my-input">SKU</InputLabel>
           <Input
@@ -812,6 +824,7 @@ function UploadProduct() {
           <InputLabel htmlFor="my-input">
             Standard Retail Price in your local currency *
           </InputLabel>
+
           <Input
             id="my-input"
             name="retail_price"
@@ -1063,9 +1076,6 @@ function UploadProduct() {
         </FormControl>
 
         <Box className={classes.footer}>
-          <Button variant="contained" color="primary">
-            Cancel
-          </Button>
           <div className={classes.wrapper}>
             <Button
               type="submit"

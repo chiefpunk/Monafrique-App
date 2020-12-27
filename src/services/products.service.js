@@ -12,18 +12,21 @@ export function getProducts() {
   return axios
     .get(GET_PRODUCTS_API_URL, { headers: authHeader() })
     .then((res) => res.data)
+    .catch((err) => err)
 }
 
 export function getCategories() {
   return axios
     .get(GET_CATEGORIES_API_URL, { headers: authHeader() })
     .then((res) => res.data)
+    .catch((err) => err)
 }
 
 export function getTags() {
   return axios
     .get(GET_TAGS_API_URL, { headers: authHeader() })
     .then((res) => res.data)
+    .catch((err) => err)
 }
 
 export function postProduct(data) {
@@ -43,5 +46,7 @@ export async function uploadImage(image, title, width, height) {
     method: 'POST',
     headers: authHeader(),
     body: formData,
-  }).then((res) => res.json())
+  })
+    .then((res) => res.json())
+    .catch((err) => err)
 }

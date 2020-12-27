@@ -105,14 +105,12 @@ export const getTags = () => (dispatch) => {
 }
 
 export const postProduct = (data) => (dispatch) => {
-  console.log(data)
   return ProductsService.postProduct(data).then(
     (data) => {
       dispatch({
         type: POST_PRODUCT_SUCCESS,
         payload: { data },
       })
-      console.log(data)
       return Promise.resolve()
     },
     (error) => {

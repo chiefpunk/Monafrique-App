@@ -110,7 +110,7 @@ export default function ViewAllProducts() {
           ? 'On backorder'
           : product.purchasable === 'inpurchaseable'
           ? 'In purchaseable'
-          : '',
+          : 'Out of stock',
       price: [
         price_formatter.format(product.regular_price && product.regular_price),
         price_formatter.format(product.sale_price && product.sale_price),
@@ -162,7 +162,7 @@ export default function ViewAllProducts() {
                   return (
                     <TableRow hover role="checkbox" tabIndex={-1} key={index}>
                       <TableCell align="left">
-                        <img width="50" src={row.image} alt="abc"></img>
+                        <img width="50" src={row.image} alt={row.name}></img>
                       </TableCell>
                       <TableCell
                         className={classes.cursor_point}
